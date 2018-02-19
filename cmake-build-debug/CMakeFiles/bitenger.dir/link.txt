@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/bitenger.dir/main.cpp.o  -o bitenger 
