@@ -20,12 +20,13 @@
 #include <ifaddrs.h>
 #include <bits/stdc++.h>
 #include <netdb.h>
+
 const int udpListenPort   = 8888;
 const int tcpTransferPort = 9999;
 int udpListenSocket;
 int tcpTransferSocket;
 bool firstRun = true;
-std::set<std::map<std::string, std::string> > alivePeers;
+std::set<std::map<std::string, std::string> > alivePeers; // IP and Name
 void errorMessage(std::string err){
     GtkWidget *dialog = gtk_message_dialog_new(NULL,
                                                GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK_CANCEL, err.c_str());
@@ -38,6 +39,7 @@ void infoMessage(std::string err){
     gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(GTK_WIDGET(dialog));
 }
+
 class Network{
 private:
     typedef struct sockaddr_in  station;
@@ -48,12 +50,14 @@ public:
     Network(){
         if(firstRun){
             int accessTrigger = 1;
-
             udpListenSocket   = socket(AF_INET, SOCK_DGRAM,  IPPROTO_UDP);
             tcpTransferSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-
             setsockopt(udpListenSocket, SOL_SOCKET, SO_BROADCAST, &accessTrigger, sizeof(accessTrigger));
             setsockopt(udpListenSocket, SOL_SOCKET, SO_REUSEADDR, &accessTrigger, sizeof(accessTrigger));
+            std::string handshake = "connected";
+            broadcastAvailability(true, handshake);
+            bindBroadcastPort();
+
         }
     }
     static char* getChars(const std::string &input){

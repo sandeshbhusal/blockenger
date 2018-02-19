@@ -166,6 +166,12 @@
 		<Unit filename="/home/sandesh/CLionProjects/bitenger/network.h">
 			<Option target="gtkmmproject"/>
 		</Unit>
+		<Unit filename="/home/sandesh/CLionProjects/bitenger/resources.h">
+			<Option target="gtkmmproject"/>
+		</Unit>
+		<Unit filename="/home/sandesh/CLionProjects/bitenger/ui.h">
+			<Option target="gtkmmproject"/>
+		</Unit>
 		<Unit filename="/home/sandesh/CLionProjects/bitenger/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\"/>
 		</Unit>
