@@ -2,34 +2,37 @@
 #define GTKMMPROJECT_UI_H
 
 #include "network.h"
+#include "resources.h"
 #include <gtkmm/listbox.h>
+#include <gtkmm/button.h>
+#include <gtkmm/entry.h>
+#include <gtkmm/box.h>
 
-void populateActive(Gtk::ListBox *listBox){
-//    Gtk::ListBoxRow *myRow;
-//    Gtk::Button *myButton;
-//    Gtk::Box *chatRow;
-//    Gtk::Label *l2;
-//    Gtk::Image *avatar;
-//    myRow = new Gtk::ListBoxRow;
-//    myButton = new Gtk::ToggleButton();
-//    l2    = new Gtk::Label("General Kenobi");
-//    l2->set_alignment(0.1, 0.5);
-//    avatar = new Gtk::Image;
-//    std::string imagePath = "../reindeer.png";
-//    avatar->set(imagePath);
-//    avatar->set_size_request(40, 40);
-//    chatRow = new Gtk::Box();
-//    chatRow->set_size_request(0, 40);
-//    chatRow->pack_start(*avatar);
-//    chatRow->pack_start(*l2);
-//    myButton->set_relief(Gtk::ReliefStyle::RELIEF_NONE);
-//    myButton->add(*chatRow);
-//    myRow->add(*myButton);
-//    listBox->append(*myRow);
-//    listBox->show_all();
-    for(auto x = alivePeers.begin(); x != alivePeers.end(); x++){
-        g_print("%s", x.first());
-    }
+
+void populateActive(Gtk::ListBox *listBox, std::string name){
+    Gtk::ListBoxRow *myRow;
+    Gtk::Button *myButton;
+    Gtk::Box *chatRow;
+    Gtk::Label *l2;
+    Gtk::Image *avatar;
+    myRow = new Gtk::ListBoxRow;
+    myButton = new Gtk::Button();
+    l2    = new Gtk::Label(name);
+    l2->set_alignment(0.1, 0.5);
+    avatar = new Gtk::Image;
+    int x = 1;
+    std::string imagePath = "../"+userImages[x];
+    avatar->set(imagePath);
+    avatar->set_size_request(40, 40);
+    chatRow = new Gtk::Box();
+    chatRow->set_size_request(0, 40);
+    chatRow->pack_start(*avatar);
+    chatRow->pack_start(*l2);
+    myButton->set_relief(Gtk::ReliefStyle::RELIEF_NONE);
+    myButton->add(*chatRow);
+    myRow->add(*myButton);
+    listBox->append(*myRow);
+    listBox->show_all();
 }
 
 void addSentMessage(Gtk::ListBox *listBox, std::string message){
@@ -42,6 +45,8 @@ void addSentMessage(Gtk::ListBox *listBox, std::string message){
     hisLabel->set_margin_right(10);
     hisLabel->set_margin_bottom(10);
     hisLabel->set_padding(10, 10);
+    hisLabel->set_line_wrap(true);
+
 
     Gdk::RGBA myColor;
     myColor.set_rgba(0, 0.631, 1, 1);

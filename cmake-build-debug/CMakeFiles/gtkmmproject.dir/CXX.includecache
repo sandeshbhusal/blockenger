@@ -45,6 +45,10 @@ cstring
 -
 arpa/inet.h
 /home/sandesh/CLionProjects/bitenger/arpa/inet.h
+ui.h
+/home/sandesh/CLionProjects/bitenger/ui.h
+resources.h
+/home/sandesh/CLionProjects/bitenger/resources.h
 ifaddrs.h
 -
 bits/stdc++.h
@@ -52,8 +56,24 @@ bits/stdc++.h
 netdb.h
 -
 
+/home/sandesh/CLionProjects/bitenger/resources.h
+iostream
+-
+network.h
+/home/sandesh/CLionProjects/bitenger/network.h
+
 /home/sandesh/CLionProjects/bitenger/ui.h
+network.h
+/home/sandesh/CLionProjects/bitenger/network.h
+resources.h
+/home/sandesh/CLionProjects/bitenger/resources.h
 gtkmm/listbox.h
+-
+gtkmm/button.h
+-
+gtkmm/entry.h
+-
+gtkmm/box.h
 -
 
 /usr/include/atk-1.0/atk/atk-enum-types.h

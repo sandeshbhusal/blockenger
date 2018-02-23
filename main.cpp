@@ -5,9 +5,6 @@
 #include "instance.h"
 #include "ui.h"
 
-Gtk::Window *mainWindow;
-Gtk::Button *connectButton;
-Gtk::Entry  *myName;
 Network *mynet;
 
 void connectNetwork(Glib::ustring const &in){
@@ -27,6 +24,10 @@ void connectNetwork(Glib::ustring const &in){
         }
     }
 }
+void sendMessage(){
+    addSentMessage(messageViewer, myMessage->get_text());
+    myMessage->set_text("");
+}
 
 int main(int argc, char *argv[]) {
     using namespace Gtk;
@@ -42,21 +43,27 @@ int main(int argc, char *argv[]) {
     builder = Gtk::Builder::create_from_file("../mainWindow.glade");
     builder->get_widget("mainWindow", mainWindow);
 
-    Gtk::ListBox *listBox;
-    builder->get_widget("listbox1", listBox);
+    builder->get_widget("listbox1", userListBox);
 
-    populateActive(listBox);
+    populateActive(userListBox, "sandesh");
 
-    Gtk::ListBox *messageViewer;
+    builder->get_widget("messageEdit", myMessage);
     builder->get_widget("messageList", messageViewer);
     messageViewer->set_border_width(0);
     messageViewer->set_selection_mode(SelectionMode::SELECTION_NONE);
-    for(int i=0; i<12; i++){
-        addSentMessage(messageViewer, "hello there!");
-        addReceivedMessage(messageViewer, "General Kenobi");
-    }
+
+    addSentMessage(messageViewer, "hello there!");
+    addReceivedMessage(messageViewer, "General Kenobi");
+
+    myMessage->signal_activate().connect(sigc::ptr_fun(&sendMessage));
+
+    Network mynetwork;
 
     return app->run(*mainWindow);
+    broadcastListener->join();
+    messageListener->join();
+    std::string handshake = "d|bhusal";
+    mynetwork.broadcastAvailability(false, handshake);
     return 0;
 
 }

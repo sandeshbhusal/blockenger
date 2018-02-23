@@ -17,13 +17,17 @@
 #include <cctype>
 #include <cstring>
 #include "arpa/inet.h"
+#include "ui.h"
+#include "resources.h"
 #include <ifaddrs.h>
 #include <bits/stdc++.h>
 #include <netdb.h>
 
 const int udpListenPort   = 8888;
-const int tcpTransferPort = 9999;
+const int tcpTransferPort = 7777;
+sockaddr_in inputStation;
 int udpListenSocket;
+
 int tcpTransferSocket;
 bool firstRun = true;
 std::set<std::map<std::string, std::string> > alivePeers; // IP and Name
@@ -39,13 +43,14 @@ void infoMessage(std::string err){
     gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(GTK_WIDGET(dialog));
 }
+std::thread *broadcastListener;
+
+std::thread *messageListener;
 
 class Network{
 private:
     typedef struct sockaddr_in  station;
     typedef struct sockaddr     stationBase;
-    std::thread *broadcastListener;
-    std::thread *broadcastSender;
 public:
     Network(){
         if(firstRun){
@@ -54,19 +59,19 @@ public:
             tcpTransferSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
             setsockopt(udpListenSocket, SOL_SOCKET, SO_BROADCAST, &accessTrigger, sizeof(accessTrigger));
             setsockopt(udpListenSocket, SOL_SOCKET, SO_REUSEADDR, &accessTrigger, sizeof(accessTrigger));
-            std::string handshake = "connected";
+            setsockopt(tcpTransferSocket, SOL_SOCKET, SO_REUSEADDR, &accessTrigger, sizeof(accessTrigger));
+            std::string handshake = "c|bhusal";
             broadcastAvailability(true, handshake);
             bindBroadcastPort();
-
+            broadcastListener = new std::thread(listenPeerBroadcast);
+            bindMessagePort();
+            messageListener   = new std::thread(listenMessage);
         }
     }
     static char* getChars(const std::string &input){
         auto retVal = new char[input.length()];
         strcpy(retVal, input.c_str());
         return retVal;
-    }
-    static void  sendMessage(){
-        
     }
     static void  broadcastAvailability(bool available, std::string &handshake){
         if(available){
@@ -114,6 +119,30 @@ public:
             return true;
         }
     }
+    static bool  bindMessagePort(){
+        inputStation.sin_family      = AF_INET;
+        inputStation.sin_addr.s_addr = INADDR_ANY;
+        inputStation.sin_port        = htons(tcpTransferPort);
+        class bindException{};
+        class listenException{};
+        try{
+            int out = bind(tcpTransferSocket, (stationBase *)&inputStation, sizeof(inputStation));
+            if(out<0)
+                throw new bindException;
+            int x = listen(tcpTransferSocket, 3);
+            if(x < 0)
+                throw new listenException;
+        }
+        catch(bindException e) {
+            g_print("Could not bind to 192.168.1.1");
+            return false;
+        }
+        catch(listenException e){
+            g_print("Could not listen to anything...");
+            return false;
+        }
+        return true;
+    }
     static void  listenPeerBroadcast(){
         station incoming;
         std::string incomingIP;
@@ -128,16 +157,17 @@ public:
                 std::string name;
                 for(int i=2; i<readBytes-1; i++)
                     name[i-2] = buffer[i];
-                std::pair<std::string, std::string> x = std::make_pair(incomingIP, name);
-                std::map<std::string, std::string> m;
-                m.insert(x);
-                alivePeers.insert(m);
+//                std::pair<std::string, std::string> x = std::make_pair(incomingIP, name);
+//                std::map<std::string, std::string> m;
+//                m.insert(x);
+//                alivePeers.insert(m);
+//                infoMessage(buffer);
             }
             else{
-                std::cout << inet_ntoa(incoming.sin_addr) << " ";
+                g_print("%s ", inet_ntoa(incoming.sin_addr));
                 for(int i=2; i<readBytes-1; i++)
-                    std::cout << buffer[i];
-                std::cout << " Says bye :'(" << std::endl;
+                    g_print("%c", buffer[i]);
+                populateActive(userListBox, "buffer");
             }
         }
     }
@@ -160,6 +190,22 @@ public:
             }
             return inet;
         }
+    }
+    static void  listenMessage(){
+        int *sendinStation = new int;
+        int size = sizeof(station);
+        g_print("listening connections\n");
+        *sendinStation = accept(tcpTransferSocket, (stationBase*)&inputStation, (socklen_t*)&size);
+        char buffer[1024];
+        g_print("Got something...\n");
+        while(true){
+            read(*sendinStation, buffer, 1024);
+            g_print("%s\n", buffer);
+            addReceivedMessage(messageViewer, buffer);
+        }
+        const auto wait_duration = std::chrono::milliseconds(10);
+        std::this_thread::sleep_for(wait_duration);
+        messageListener = new std::thread(listenMessage);
     }
 };
 #endif
