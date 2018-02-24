@@ -241,7 +241,6 @@ public:
             max_sd = tcpTransferSocket;
             for (int i = 0; i < 30; i++) {
                 sd = clients[i];
-
                 if (sd > 0)
                     FD_SET(sd, &readfds);
                 if (sd > max_sd)
@@ -249,11 +248,12 @@ public:
             }
             activity = select(max_sd + 1, &readfds, NULL, NULL, NULL);
             if ((activity < 0) && (errno != EINTR)) {
-                printf("select error");
+                listenMessage();
             }
             if (FD_ISSET(tcpTransferSocket, &readfds)) {
+                int inputStationSize = sizeof(inputStation);
                 if ((new_socket = accept(tcpTransferSocket,
-                                         (struct sockaddr *) &inputStation, (socklen_t *) &inputStation)) < 0) {
+                                         (struct sockaddr *) &inputStation, (socklen_t *) &inputStationSize)) < 0) {
                     perror("accept");
                     exit(EXIT_FAILURE);
                 }
@@ -265,37 +265,46 @@ public:
                     if (clients[i] == 0) {
                         clients[i] = new_socket;
                         printf("Adding to list of sockets as %d\n", i);
+                        numConnectedClients++;
                         break;
                     }
-
                 }
             }
-            for (int i = 0; i < 30; i++) {
+            for (int i = 0; i < numConnectedClients; i++) {
                 sd = clients[i];
                 char buffer[1024];
                 socklen_t size = sizeof(inputStation);
+                g_print("socket #%d ", i);
                 if (FD_ISSET(sd, &readfds)) {
                     int valread;
-                    if ((valread = read(sd, buffer, 500)) == 0) {
-                        getpeername(sd, (struct sockaddr *) &inputStation, \
-                        (socklen_t *) &(size));
-                        printf("Host disconnected , ip %s , port %d \n", inet_ntoa(inputStation.sin_addr),
-                               ntohs(inputStation.sin_port));
-                        close(sd);
-                        clients[i] = 0;
-                    } else{
-                        char *newBuff;
-                        newBuff = new char[valread+1];
-                        strncpy(newBuff, buffer, valread);
-                        newBuff[valread] = '\0';
-                        addReceivedMessage(messageViewer, newBuff);
+//                    if ((valread = read(sd, buffer, 1023)) == 0) {
+//                        getpeername(sd, (struct sockaddr *) &inputStation, (socklen_t *) &(size));
+//                        printf("Host disconnected , ip %s , port %d \n", inet_ntoa(inputStation.sin_addr),
+//                               ntohs(inputStation.sin_port));
+//                        close(sd);
+//                        clients[i] = 0;
+//                    } else{
+//                        char newBuff[1024];
+//                        strncpy(newBuff, buffer, valread);
+//                        newBuff[valread] = '\0';
+//                        g_print("\n%s\n", buffer);
+//                        strcpy(buffer, "");
+//                        addReceivedMessage(messageViewer, newBuff);
+//                    }
+                    while((valread = recv(sd, buffer, 1024, MSG_DONTWAIT)) > 0 ){
+                        buffer[valread] = '\0';
+                        std::string myStr = buffer;
+                        g_print("Buffer sent : %d characters as %s\n", valread, myStr.substr(0, myStr.length()-2).c_str());
+                        if(valread > 2){
+                            addReceivedMessage(messageViewer, myStr.substr(0, myStr.length()-2));
+                        }
                     }
                 }
             }
+//            const auto wait_duration = std::chrono::milliseconds(50);
+//            std::this_thread::sleep_for(wait_duration);
+//            messageListener = new std::thread(listenMessage);
         }
-        const auto wait_duration = std::chrono::milliseconds(10);
-        std::this_thread::sleep_for(wait_duration);
-        messageListener = new std::thread(listenMessage);
     }
     static bool  sendMessage(const std::string &message){
         int accessTrigger = 1;

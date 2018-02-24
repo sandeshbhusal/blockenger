@@ -69,6 +69,8 @@ int main(int argc, char *argv[]) {
     return app->run(*mainWindow);
     broadcastListener->join();
     messageListener->join();
+    perror("Error occured.");
+    std::cout << errno;
     return 0;
 
 }
