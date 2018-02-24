@@ -6,29 +6,29 @@
 
 #IncludeRegexTransform: 
 
-/home/sandesh/CLionProjects/bitenger/block.h
+/home/sandesh/projects/bitenger/block.h
 iostream
 -
 vector
 -
 
-/home/sandesh/CLionProjects/bitenger/instance.h
+/home/sandesh/projects/bitenger/instance.h
 
-/home/sandesh/CLionProjects/bitenger/main.cpp
+/home/sandesh/projects/bitenger/main.cpp
 gtkmm.h
 -
 iostream
 -
 network.h
-/home/sandesh/CLionProjects/bitenger/network.h
+/home/sandesh/projects/bitenger/network.h
 block.h
-/home/sandesh/CLionProjects/bitenger/block.h
+/home/sandesh/projects/bitenger/block.h
 instance.h
-/home/sandesh/CLionProjects/bitenger/instance.h
+/home/sandesh/projects/bitenger/instance.h
 ui.h
-/home/sandesh/CLionProjects/bitenger/ui.h
+/home/sandesh/projects/bitenger/ui.h
 
-/home/sandesh/CLionProjects/bitenger/network.h
+/home/sandesh/projects/bitenger/network.h
 iostream
 -
 vector
@@ -44,11 +44,11 @@ cctype
 cstring
 -
 arpa/inet.h
-/home/sandesh/CLionProjects/bitenger/arpa/inet.h
+/home/sandesh/projects/bitenger/arpa/inet.h
 ui.h
-/home/sandesh/CLionProjects/bitenger/ui.h
+/home/sandesh/projects/bitenger/ui.h
 resources.h
-/home/sandesh/CLionProjects/bitenger/resources.h
+/home/sandesh/projects/bitenger/resources.h
 ifaddrs.h
 -
 bits/stdc++.h
@@ -56,17 +56,17 @@ bits/stdc++.h
 netdb.h
 -
 
-/home/sandesh/CLionProjects/bitenger/resources.h
+/home/sandesh/projects/bitenger/resources.h
 iostream
 -
 network.h
-/home/sandesh/CLionProjects/bitenger/network.h
+/home/sandesh/projects/bitenger/network.h
 
-/home/sandesh/CLionProjects/bitenger/ui.h
+/home/sandesh/projects/bitenger/ui.h
 network.h
-/home/sandesh/CLionProjects/bitenger/network.h
+/home/sandesh/projects/bitenger/network.h
 resources.h
-/home/sandesh/CLionProjects/bitenger/resources.h
+/home/sandesh/projects/bitenger/resources.h
 gtkmm/listbox.h
 -
 gtkmm/button.h

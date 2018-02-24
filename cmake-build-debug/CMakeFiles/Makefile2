@@ -45,19 +45,19 @@ cmake_force:
 SHELL = /bin/sh
 
 # The CMake executable.
-CMAKE_COMMAND = /home/sandesh/IDES/clion-2017.2.3/bin/cmake/bin/cmake
+CMAKE_COMMAND = /home/sandesh/Downloads/clion-2017.3.3/bin/cmake/bin/cmake
 
 # The command to remove a file.
-RM = /home/sandesh/IDES/clion-2017.2.3/bin/cmake/bin/cmake -E remove -f
+RM = /home/sandesh/Downloads/clion-2017.3.3/bin/cmake/bin/cmake -E remove -f
 
 # Escaping for special characters.
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/sandesh/CLionProjects/bitenger
+CMAKE_SOURCE_DIR = /home/sandesh/projects/bitenger
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/sandesh/CLionProjects/bitenger/cmake-build-debug
+CMAKE_BINARY_DIR = /home/sandesh/projects/bitenger/cmake-build-debug
 
 #=============================================================================
 # Target rules for target CMakeFiles/gtkmmproject.dir
@@ -66,7 +66,7 @@ CMAKE_BINARY_DIR = /home/sandesh/CLionProjects/bitenger/cmake-build-debug
 CMakeFiles/gtkmmproject.dir/all:
 	$(MAKE) -f CMakeFiles/gtkmmproject.dir/build.make CMakeFiles/gtkmmproject.dir/depend
 	$(MAKE) -f CMakeFiles/gtkmmproject.dir/build.make CMakeFiles/gtkmmproject.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/sandesh/CLionProjects/bitenger/cmake-build-debug/CMakeFiles --progress-num=1,2 "Built target gtkmmproject"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/sandesh/projects/bitenger/cmake-build-debug/CMakeFiles --progress-num=1,2 "Built target gtkmmproject"
 .PHONY : CMakeFiles/gtkmmproject.dir/all
 
 # Include target in all.
@@ -76,9 +76,9 @@ all: CMakeFiles/gtkmmproject.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/gtkmmproject.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/sandesh/CLionProjects/bitenger/cmake-build-debug/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/sandesh/projects/bitenger/cmake-build-debug/CMakeFiles 2
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/gtkmmproject.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/sandesh/CLionProjects/bitenger/cmake-build-debug/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/sandesh/projects/bitenger/cmake-build-debug/CMakeFiles 0
 .PHONY : CMakeFiles/gtkmmproject.dir/rule
 
 # Convenience name for target.

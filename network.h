@@ -44,8 +44,14 @@ void infoMessage(std::string err){
     gtk_widget_destroy(GTK_WIDGET(dialog));
 }
 std::thread *broadcastListener;
-
 std::thread *messageListener;
+fd_set readfds;
+int max_sd;
+int activity;
+int new_socket;
+
+int clients[30];
+int numConnectedClients = 0;
 
 class Network{
 private:
@@ -66,6 +72,7 @@ public:
             broadcastListener = new std::thread(listenPeerBroadcast);
             bindMessagePort();
             messageListener   = new std::thread(listenMessage);
+            memset(&clients, 0, sizeof(clients));
         }
     }
     static char* getChars(const std::string &input){
@@ -192,16 +199,64 @@ public:
         }
     }
     static void  listenMessage(){
-        int *sendinStation = new int;
-        int size = sizeof(station);
-        g_print("listening connections\n");
-        *sendinStation = accept(tcpTransferSocket, (stationBase*)&inputStation, (socklen_t*)&size);
-        char buffer[1024];
-        g_print("Got something...\n");
-        while(true){
-            read(*sendinStation, buffer, 1024);
-            g_print("%s\n", buffer);
-            addReceivedMessage(messageViewer, buffer);
+        while(1) {
+            int sd;
+            FD_ZERO(&readfds);
+            FD_SET(tcpTransferSocket, &readfds);
+            max_sd = tcpTransferSocket;
+            for (int i = 0; i < 30; i++) {
+                sd = clients[i];
+
+                if (sd > 0)
+                    FD_SET(sd, &readfds);
+                if (sd > max_sd)
+                    max_sd = sd;
+            }
+            activity = select(max_sd + 1, &readfds, NULL, NULL, NULL);
+            if ((activity < 0) && (errno != EINTR)) {
+                printf("select error");
+            }
+            if (FD_ISSET(tcpTransferSocket, &readfds)) {
+                if ((new_socket = accept(tcpTransferSocket,
+                                         (struct sockaddr *) &inputStation, (socklen_t *) &inputStation)) < 0) {
+                    perror("accept");
+                    exit(EXIT_FAILURE);
+                }
+                std::string a(inet_ntoa(inputStation.sin_addr));
+                printf("New connection , socket fd is %d , ip is : %s , port : %d\n", new_socket,
+                       inet_ntoa(inputStation.sin_addr), ntohs(inputStation.sin_port));
+
+                for (int i = 0; i < 30; i++) {
+                    if (clients[i] == 0) {
+                        clients[i] = new_socket;
+                        printf("Adding to list of sockets as %d\n", i);
+                        break;
+                    }
+
+                }
+            }
+            for (int i = 0; i < 30; i++) {
+                sd = clients[i];
+                char buffer[1024];
+                socklen_t size = sizeof(inputStation);
+                if (FD_ISSET(sd, &readfds)) {
+                    int valread;
+                    if ((valread = read(sd, buffer, 500)) == 0) {
+                        getpeername(sd, (struct sockaddr *) &inputStation, \
+                        (socklen_t *) &(size));
+                        printf("Host disconnected , ip %s , port %d \n", inet_ntoa(inputStation.sin_addr),
+                               ntohs(inputStation.sin_port));
+                        close(sd);
+                        clients[i] = 0;
+                    } else{
+                        char *newBuff;
+                        newBuff = new char[valread+1];
+                        strncpy(newBuff, buffer, valread);
+                        newBuff[valread] = '\0';
+                        addReceivedMessage(messageViewer, newBuff);
+                    }
+                }
+            }
         }
         const auto wait_duration = std::chrono::milliseconds(10);
         std::this_thread::sleep_for(wait_duration);

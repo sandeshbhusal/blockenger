@@ -1,6 +1,21 @@
-/home/sandesh/IDES/clion-2017.2.3/bin/cmake/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/sandesh/CLionProjects/bitenger
+/home/sandesh/Downloads/clion-2017.3.3/bin/cmake/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/sandesh/projects/bitenger
+-- The C compiler identification is GNU 5.4.0
+-- The CXX compiler identification is GNU 5.4.0
+-- Check for working C compiler: /usr/bin/cc
+-- Check for working C compiler: /usr/bin/cc -- works
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Check for working CXX compiler: /usr/bin/c++
+-- Check for working CXX compiler: /usr/bin/c++ -- works
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found PkgConfig: /usr/bin/pkg-config (found version "0.29.1") 
 -- Checking for module 'gtkmm-3.0'
 --   Found gtkmm-3.0, version 3.18.0
 -- Configuring done
 -- Generating done
--- Build files have been written to: /home/sandesh/CLionProjects/bitenger/cmake-build-debug
+-- Build files have been written to: /home/sandesh/projects/bitenger/cmake-build-debug
