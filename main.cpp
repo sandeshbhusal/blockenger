@@ -29,13 +29,14 @@ void sendMessage(){
         addSentMessage(messageViewer, myMessage->get_text(), true);
     else
         addSentMessage(messageViewer, myMessage->get_text(), false);
-
     myMessage->set_text("");
 }
 void quitApplication(){
+    messageMutex.unlock();
     std::string handshake = "d|bhusal";
     mynet->broadcastAvailability(false, handshake);
     g_print("Exiting the application...");
+    exit(0);
 }
 int main(int argc, char *argv[]) {
     using namespace Gtk;
@@ -66,11 +67,8 @@ int main(int argc, char *argv[]) {
     mynet = new Network;
 
     app->signal_shutdown().connect(sigc::ptr_fun(quitApplication));
-    return app->run(*mainWindow);
+    app->run(*mainWindow);
     broadcastListener->join();
     messageListener->join();
-    perror("Error occured.");
-    std::cout << errno;
     return 0;
-
 }

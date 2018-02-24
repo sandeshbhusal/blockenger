@@ -22,6 +22,9 @@
 #include <ifaddrs.h>
 #include <bits/stdc++.h>
 #include <netdb.h>
+#include <mutex>
+
+std::mutex messageMutex;
 
 const int udpListenPort   = 8888;
 const int tcpTransferPort = 7777;
@@ -82,6 +85,7 @@ public:
         return retVal;
     }
     static void  broadcastAvailability(bool available, std::string &handshake){
+        messageMutex.lock();
         if(available){
             int accessTrigger = 1;
             int udpListenSocket   = socket(AF_INET, SOCK_DGRAM,  IPPROTO_UDP);
@@ -139,10 +143,10 @@ public:
             }
             std::cout << "Failed to broadcast. Are you connected?" << std::endl;
         }
+        messageMutex.unlock();
     }
     static bool  bindBroadcastPort(){
         udpListenSocket   = socket(AF_INET, SOCK_DGRAM,  IPPROTO_UDP);
-
         station me;
         memset(&me, 0, sizeof(me));
         me.sin_port = htons(udpListenPort);
@@ -274,7 +278,6 @@ public:
                 sd = clients[i];
                 char buffer[1024];
                 socklen_t size = sizeof(inputStation);
-                g_print("socket #%d ", i);
                 if (FD_ISSET(sd, &readfds)) {
                     int valread;
 //                    if ((valread = read(sd, buffer, 1023)) == 0) {
@@ -291,12 +294,12 @@ public:
 //                        strcpy(buffer, "");
 //                        addReceivedMessage(messageViewer, newBuff);
 //                    }
-                    while((valread = recv(sd, buffer, 1024, MSG_DONTWAIT)) > 0 ){
+                    while((valread = recv(sd, buffer, 1024, 0)) > 0 ){
                         buffer[valread] = '\0';
                         std::string myStr = buffer;
-                        g_print("Buffer sent : %d characters as %s\n", valread, myStr.substr(0, myStr.length()-2).c_str());
+                        g_print("Buffer sent : %d characters as %s\n", strlen(buffer), myStr.c_str());
                         if(valread > 2){
-                            addReceivedMessage(messageViewer, myStr.substr(0, myStr.length()-2));
+                            addReceivedMessage(messageViewer, myStr);
                         }
                     }
                 }
@@ -312,7 +315,7 @@ public:
         setsockopt(sendMessageSocket, SOL_SOCKET, SO_REUSEADDR, &accessTrigger, sizeof(accessTrigger));
 
         station sendStation;
-        sendStation.sin_addr.s_addr = inet_addr("192.168.0.103");
+        sendStation.sin_addr.s_addr = inet_addr("192.168.0.102");
         sendStation.sin_family = AF_INET;
         sendStation.sin_port = htons(tcpTransferPort);
         class bindException {};

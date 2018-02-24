@@ -6,7 +6,8 @@
 #include <gtkmm/button.h>
 #include <gtkmm/entry.h>
 #include <gtkmm/box.h>
-
+#include <mutex>
+std::mutex mu;
 void populateActive(Gtk::ListBox *listBox, std::string name){
     Gtk::ListBoxRow *myRow;
     Gtk::Button *myButton;
@@ -33,6 +34,7 @@ void populateActive(Gtk::ListBox *listBox, std::string name){
     listBox->show_all();
 }
 void addSentMessage(Gtk::ListBox *listBox, std::string message, bool sent){
+    mu.lock();
     if(sent){
         Gtk::ListBoxRow *messageItemOut = new Gtk::ListBoxRow();
 
@@ -81,8 +83,10 @@ void addSentMessage(Gtk::ListBox *listBox, std::string message, bool sent){
         listBox->append(*messageItemOut);
         listBox->show_all();
     }
+    mu.unlock();
 }
 void addReceivedMessage(Gtk::ListBox *listBox, std::string message){
+    mu.lock();
     Gtk::ListBoxRow *messageItemIn = new Gtk::ListBoxRow();
     Gtk::Label *myLabel = new Gtk::Label(message);
     myLabel->set_alignment(0, 0.5);
@@ -102,6 +106,7 @@ void addReceivedMessage(Gtk::ListBox *listBox, std::string message){
     messageItemIn->add(*myLabel);
     listBox->append(*messageItemIn);
     listBox->show_all();
+    mu.unlock();
 }
 
 #endif
