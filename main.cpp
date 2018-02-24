@@ -25,10 +25,18 @@ void connectNetwork(Glib::ustring const &in){
     }
 }
 void sendMessage(){
-    addSentMessage(messageViewer, myMessage->get_text());
+    if(mynet->sendMessage(myMessage->get_text()))
+        addSentMessage(messageViewer, myMessage->get_text(), true);
+    else
+        addSentMessage(messageViewer, myMessage->get_text(), false);
+
     myMessage->set_text("");
 }
-
+void quitApplication(){
+    std::string handshake = "d|bhusal";
+    mynet->broadcastAvailability(false, handshake);
+    g_print("Exiting the application...");
+}
 int main(int argc, char *argv[]) {
     using namespace Gtk;
     using namespace std;
@@ -52,18 +60,15 @@ int main(int argc, char *argv[]) {
     messageViewer->set_border_width(0);
     messageViewer->set_selection_mode(SelectionMode::SELECTION_NONE);
 
-    addSentMessage(messageViewer, "hello there!");
     addReceivedMessage(messageViewer, "General Kenobi");
 
     myMessage->signal_activate().connect(sigc::ptr_fun(&sendMessage));
+    mynet = new Network;
 
-    Network mynetwork;
-
+    app->signal_shutdown().connect(sigc::ptr_fun(quitApplication));
     return app->run(*mainWindow);
     broadcastListener->join();
     messageListener->join();
-    std::string handshake = "d|bhusal";
-    mynetwork.broadcastAvailability(false, handshake);
     return 0;
 
 }

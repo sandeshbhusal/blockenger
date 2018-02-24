@@ -1,13 +1,11 @@
 #ifndef GTKMMPROJECT_UI_H
 #define GTKMMPROJECT_UI_H
 
-#include "network.h"
 #include "resources.h"
 #include <gtkmm/listbox.h>
 #include <gtkmm/button.h>
 #include <gtkmm/entry.h>
 #include <gtkmm/box.h>
-
 
 void populateActive(Gtk::ListBox *listBox, std::string name){
     Gtk::ListBoxRow *myRow;
@@ -34,30 +32,55 @@ void populateActive(Gtk::ListBox *listBox, std::string name){
     listBox->append(*myRow);
     listBox->show_all();
 }
+void addSentMessage(Gtk::ListBox *listBox, std::string message, bool sent){
+    if(sent){
+        Gtk::ListBoxRow *messageItemOut = new Gtk::ListBoxRow();
 
-void addSentMessage(Gtk::ListBox *listBox, std::string message){
-    Gtk::ListBoxRow *messageItemOut = new Gtk::ListBoxRow();
-
-    Gtk::Label *hisLabel = new Gtk::Label(message);
-    hisLabel->set_alignment(1, 0.5);
-    hisLabel->set_margin_left(300);
-    hisLabel->set_margin_top(10);
-    hisLabel->set_margin_right(10);
-    hisLabel->set_margin_bottom(10);
-    hisLabel->set_padding(10, 10);
-    hisLabel->set_line_wrap(true);
+        Gtk::Label *hisLabel = new Gtk::Label(message);
+        hisLabel->set_alignment(1, 0.5);
+        hisLabel->set_margin_left(300);
+        hisLabel->set_margin_top(10);
+        hisLabel->set_margin_right(10);
+        hisLabel->set_margin_bottom(10);
+        hisLabel->set_padding(10, 10);
+        hisLabel->set_line_wrap(true);
 
 
-    Gdk::RGBA myColor;
-    myColor.set_rgba(0, 0.631, 1, 1);
-    hisLabel->override_background_color(myColor);
+        Gdk::RGBA myColor;
+        myColor.set_rgba(0, 0.631, 1, 1);
+        hisLabel->override_background_color(myColor);
 
-    myColor.set_rgba(1, 1, 1, 1);
-    hisLabel->override_color(myColor);
+        myColor.set_rgba(1, 1, 1, 1);
+        hisLabel->override_color(myColor);
 
-    messageItemOut->add(*hisLabel);
-    listBox->append(*messageItemOut);
-    listBox->show_all();
+        messageItemOut->add(*hisLabel);
+        listBox->append(*messageItemOut);
+        listBox->show_all();
+    }
+    else{
+        Gtk::ListBoxRow *messageItemOut = new Gtk::ListBoxRow();
+
+        Gtk::Label *hisLabel = new Gtk::Label(message);
+        hisLabel->set_alignment(1, 0.5);
+        hisLabel->set_margin_left(300);
+        hisLabel->set_margin_top(10);
+        hisLabel->set_margin_right(10);
+        hisLabel->set_margin_bottom(10);
+        hisLabel->set_padding(10, 10);
+        hisLabel->set_line_wrap(true);
+
+
+        Gdk::RGBA myColor;
+        myColor.set_rgba(1, 0, 0, 1);
+        hisLabel->override_background_color(myColor);
+
+        myColor.set_rgba(1, 1, 1, 1);
+        hisLabel->override_color(myColor);
+
+        messageItemOut->add(*hisLabel);
+        listBox->append(*messageItemOut);
+        listBox->show_all();
+    }
 }
 void addReceivedMessage(Gtk::ListBox *listBox, std::string message){
     Gtk::ListBoxRow *messageItemIn = new Gtk::ListBoxRow();

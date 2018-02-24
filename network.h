@@ -27,8 +27,8 @@ const int udpListenPort   = 8888;
 const int tcpTransferPort = 7777;
 sockaddr_in inputStation;
 int udpListenSocket;
-
 int tcpTransferSocket;
+
 bool firstRun = true;
 std::set<std::map<std::string, std::string> > alivePeers; // IP and Name
 void errorMessage(std::string err){
@@ -50,7 +50,6 @@ int max_sd;
 int activity;
 int new_socket;
 
-int clients[30];
 int numConnectedClients = 0;
 
 class Network{
@@ -65,7 +64,9 @@ public:
             tcpTransferSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
             setsockopt(udpListenSocket, SOL_SOCKET, SO_BROADCAST, &accessTrigger, sizeof(accessTrigger));
             setsockopt(udpListenSocket, SOL_SOCKET, SO_REUSEADDR, &accessTrigger, sizeof(accessTrigger));
+            setsockopt(udpListenSocket, SOL_SOCKET, SO_REUSEPORT, &accessTrigger, sizeof(accessTrigger));
             setsockopt(tcpTransferSocket, SOL_SOCKET, SO_REUSEADDR, &accessTrigger, sizeof(accessTrigger));
+            setsockopt(tcpTransferSocket, SOL_SOCKET, SO_REUSEPORT, &accessTrigger, sizeof(accessTrigger));
             std::string handshake = "c|bhusal";
             broadcastAvailability(true, handshake);
             bindBroadcastPort();
@@ -82,6 +83,12 @@ public:
     }
     static void  broadcastAvailability(bool available, std::string &handshake){
         if(available){
+            int accessTrigger = 1;
+            int udpListenSocket   = socket(AF_INET, SOCK_DGRAM,  IPPROTO_UDP);
+            setsockopt(udpListenSocket, SOL_SOCKET, SO_BROADCAST, &accessTrigger, sizeof(accessTrigger));
+            setsockopt(udpListenSocket, SOL_SOCKET, SO_REUSEADDR, &accessTrigger, sizeof(accessTrigger));
+            setsockopt(udpListenSocket, SOL_SOCKET, SO_REUSEPORT, &accessTrigger, sizeof(accessTrigger));
+
             std::cout << "Broadcasting availability as "<< available <<" to peers..." << std::endl;
 
             station motherShip ;
@@ -95,6 +102,7 @@ public:
             while(pings--){
                 if(sendto(udpListenSocket, getChars(handshake), strlen(getChars(handshake)), 0, (stationBase*)&motherShip, sizeof(station))== -1){
                     std::cout << "Could not broadcast address. Retrying for another "<< pings <<" attempts" << std::endl;
+                    std::cout << errno;
                 }
                 else{
                     std::cout << "Successfully broadcast!" << std::endl;
@@ -104,8 +112,32 @@ public:
             std::cout << "Failed to broadcast. Are you connected?" << std::endl;
         }
         else{
-            std::string sendMsg = "disconnected";
-            broadcastAvailability(true, sendMsg);
+            int accessTrigger = 1;
+            int udpListenSocket   = socket(AF_INET, SOCK_DGRAM,  IPPROTO_UDP);
+            setsockopt(udpListenSocket, SOL_SOCKET, SO_BROADCAST, &accessTrigger, sizeof(accessTrigger));
+            setsockopt(udpListenSocket, SOL_SOCKET, SO_REUSEADDR, &accessTrigger, sizeof(accessTrigger));
+            setsockopt(udpListenSocket, SOL_SOCKET, SO_REUSEPORT, &accessTrigger, sizeof(accessTrigger));
+
+            std::cout << "Broadcasting availability as "<< available <<" to peers..." << std::endl;
+            station motherShip ;
+            memset(&motherShip, 0, sizeof(motherShip));
+
+            motherShip.sin_port         = htons(udpListenPort);
+            motherShip.sin_family       = AF_INET;
+            motherShip.sin_addr.s_addr  = inet_addr("255.255.255.255");
+
+            int pings = 5;
+            while(pings--){
+                if(sendto(udpListenSocket, getChars(handshake), strlen(getChars(handshake)), 0, (stationBase*)&motherShip, sizeof(station))== -1){
+                    std::cout << "Could not broadcast address. Retrying for another "<< pings <<" attempts" << std::endl;
+                    std::cout << errno;
+                }
+                else{
+                    std::cout << "Successfully broadcast!" << std::endl;
+                    return;
+                }
+            }
+            std::cout << "Failed to broadcast. Are you connected?" << std::endl;
         }
     }
     static bool  bindBroadcastPort(){
@@ -118,11 +150,12 @@ public:
         me.sin_addr.s_addr = INADDR_ANY;
 
         if(bind(udpListenSocket, (stationBase*)&me, sizeof(me)) == -1){
-            std::cout << "Could not bind to interface for listening to broadcasts. " << std::endl;
+            std::cout << "Could not bind to interface for broadcasts. " << std::endl;
+            g_print("%d", errno);
             return false;
         }
         else{
-            std::cout << "Successfully bound to UDP port to listen to broadcasts. " << std::endl;
+            std::cout << "Successfully bound to UDP port for broadcasts. " << std::endl;
             return true;
         }
     }
@@ -151,30 +184,32 @@ public:
         return true;
     }
     static void  listenPeerBroadcast(){
-        station incoming;
-        std::string incomingIP;
-        std::string incomingName;
-        char buffer[1024];
-        unsigned int len = sizeof(station);
-        g_print("Listening who is getting connected\n");
-        auto readBytes = recvfrom(udpListenSocket, buffer, 1024, 0, (stationBase *)&incoming, &len);
-        if(readBytes > 0){
-            if(buffer[0] == 'c'){
-                incomingIP = inet_ntoa(incoming.sin_addr);
-                std::string name;
-                for(int i=2; i<readBytes-1; i++)
-                    name[i-2] = buffer[i];
+        while(1){
+            station incoming;
+            std::string incomingIP;
+            std::string incomingName;
+            char buffer[1024];
+            unsigned int len = sizeof(station);
+            g_print("Listening who is getting connected\n");
+            auto readBytes = recvfrom(udpListenSocket, buffer, 1024, 0, (stationBase *)&incoming, &len);
+            if(readBytes > 0){
+                if(buffer[0] == 'c'){
+                    incomingIP = inet_ntoa(incoming.sin_addr);
+                    std::string name;
+                    for(int i=2; i<readBytes-1; i++)
+                        name[i-2] = buffer[i];
 //                std::pair<std::string, std::string> x = std::make_pair(incomingIP, name);
 //                std::map<std::string, std::string> m;
 //                m.insert(x);
 //                alivePeers.insert(m);
 //                infoMessage(buffer);
-            }
-            else{
-                g_print("%s ", inet_ntoa(incoming.sin_addr));
-                for(int i=2; i<readBytes-1; i++)
-                    g_print("%c", buffer[i]);
-                populateActive(userListBox, "buffer");
+                    populateActive(userListBox, buffer);
+                }
+                else{
+                    g_print("Disconnected: %s ", inet_ntoa(incoming.sin_addr));
+                    for(int i=2; i<readBytes-1; i++)
+                        g_print("%c", buffer[i]);
+                }
             }
         }
     }
@@ -261,6 +296,45 @@ public:
         const auto wait_duration = std::chrono::milliseconds(10);
         std::this_thread::sleep_for(wait_duration);
         messageListener = new std::thread(listenMessage);
+    }
+    static bool  sendMessage(const std::string &message){
+        int accessTrigger = 1;
+        int sendMessageSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        setsockopt(sendMessageSocket, SOL_SOCKET, SO_REUSEADDR, &accessTrigger, sizeof(accessTrigger));
+
+        station sendStation;
+        sendStation.sin_addr.s_addr = inet_addr("192.168.0.103");
+        sendStation.sin_family = AF_INET;
+        sendStation.sin_port = htons(tcpTransferPort);
+        class bindException {};
+        class sendException {};
+        try {
+            int b = connect(sendMessageSocket, (stationBase *) &sendStation, sizeof(station));
+            if (b < 0) {
+                g_print("Binding exception\n");
+                throw *(new bindException);
+            }
+        }
+        catch (bindException e) {
+            if(errno != 106)
+                g_print("Error binding to the port to send data...\n");
+        }
+        catch (...) {
+            g_print("%d", errno);
+            return false;
+        }
+        try {
+            ssize_t a = send(sendMessageSocket, message.c_str(), message.length(), 0);
+            if (a == -1)
+                throw *(new sendException);
+        }
+        catch (sendException e) {
+            g_print("Error sending the message to the receiver...\n");
+            g_print("%d", errno);
+            return false;
+        }
+        close(sendMessageSocket);
+        return true;
     }
 };
 #endif

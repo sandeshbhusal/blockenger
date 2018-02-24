@@ -11,6 +11,8 @@ Gtk::ListBox *userListBox;
 Gtk::ListBox *messageViewer;
 Gtk::Entry   *myMessage;
 
+int clients[30];
+
 std::string userImages[] = {
     "elf.png",
     "santa.png",
