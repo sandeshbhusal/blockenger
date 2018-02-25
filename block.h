@@ -1,41 +1,77 @@
-#ifndef GTKMMPROJECT_BLOCK_H
-#define GTKMMPROJECT_BLOCK_H
-#include <iostream>
+//
+// Created by prasanga on 2/19/18.
+//
+
+#ifndef MINIP_BLOCK_H
+#define MINIP_BLOCK_H
+
 #include <vector>
+#include <iostream>
+#include <sstream>
+#include <iterator>
 
-namespace bitenger_blockchain{
-    class Block{
-    private:
-        std::string _sender;
-        std::string _receiver;
-        std::string _prevHash;
-        std::string _data;
+using namespace std;
 
-    public:
-        long long _size;
-        std::string _genesisHash;
-        std::string _currentHash;
+// On request of blockchain, iterate the loop of blockchain,
+// run the sendData function over TCP.
 
-        Block(){
-            _size = sizeof(*this);
-        }
+class Block{
+private:
+    std::string _sender;
+    std::string _receiver;
+    std::string _data;
+    std::string _prevHash;
+    long long _index;
 
-        bool verify(){
+public:
+    long long _size;
+    std::string _genesisHash;
+    std::string _currentHash;
 
-        };
-        bool checkRecipient(const std::string id){
-            return (id==this->_receiver);
-        }
-        std::string getData(std::string privateKey){
-            if(checkRecipient(privateKey))
-                return this->_data;
-            return nullptr;
-        }
+    Block(std::string data){
+        popData(data);
     };
-    struct Node{
-        Block data;
-        Node *nextNode;
+
+    Block(std::string sender, std::string receiver, std::string data) {
+        g_print("Pushed a new block !!\n");
+        _sender = sender;
+        _receiver = receiver;
+        _data = data;
+        _prevHash = "asdasd";
+    }
+
+    bool verify() { // Kaam chaldai xa
+
     };
-    std::vector<struct Node> blockChain;
-}
+
+    std::string getData(std::string privateKey) { // Message herna use garne
+        return _data;
+    }
+
+    std::string sendData() { // network maa string send garna use garne.
+        return _genesisHash + " " + _currentHash + " " + _sender + " " + _receiver + " " + _prevHash + " " + _data;
+    }
+
+    void popData(string dat) {  // network bata aako string lai parse garne
+        std::stringstream ss(dat);
+        std::istream_iterator<std::string> begin(ss);
+        std::istream_iterator<std::string> end;
+        std::vector<std::string> vstrings(begin, end);
+        _genesisHash = vstrings[0];
+        _currentHash = vstrings[1];
+        _sender = vstrings[2];
+        _receiver = vstrings[3];
+        _prevHash = vstrings[4];
+        _data = vstrings[5];
+    }
+
+    ~Block(){
+
+    }
+};
+
+std::vector<Block> blockChain;
+
+
 #endif
+

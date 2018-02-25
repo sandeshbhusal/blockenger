@@ -42,6 +42,7 @@ void errorMessage(std::string err) {
     gtk_widget_destroy(GTK_WIDGET(dialog));
 }
 
+
 void infoMessage(std::string err) {
     GtkWidget *dialog = gtk_message_dialog_new(NULL,
                                                GTK_DIALOG_MODAL, GTK_MESSAGE_INFO, GTK_BUTTONS_OK_CANCEL, err.c_str());
@@ -82,6 +83,7 @@ public:
             bindMessagePort();
             messageListener = new std::thread(listenMessage);
             memset(&clients, 0, sizeof(clients));
+            myIP = getOwnIP();
         }
     }
 
@@ -208,7 +210,7 @@ public:
             std::string incomingName;
             char buffer[1024];
             unsigned int len = sizeof(station);
-            g_print("Listening who is getting connected\n");
+            g_print("\nListening who is getting connected\n");
             auto readBytes = recvfrom(udpListenSocket, buffer, 1024, 0, (stationBase *) &incoming, &len);
             g_print("Read %d bytes \n", readBytes);
             if (strlen(buffer) > 0) {
@@ -238,26 +240,27 @@ public:
                     }
                 }
             }
-
         }
     }
 
-    static int getInterfaceCount() {
+    static std::string getOwnIP() {
+        g_print("CHECKING MY IP ADDRESS...");
         int inet = 0, inet6 = 0;
         struct ifaddrs *interfaces, *iterator;
         int family, s, n;
         if (getifaddrs(&interfaces) == -1) {
             errorMessage("Could not bind connections!");
-            return -1;
         } else {
             for (iterator = interfaces; iterator != NULL; iterator = iterator->ifa_next) {
                 if (iterator->ifa_addr->sa_family == AF_INET) {
-                    inet++;
-                } else if (iterator->ifa_addr->sa_family == AF_INET6) {
-                    inet6++;
+                    station *sa;
+                    sa = (station*) iterator->ifa_addr;
+                    std::string address = inet_ntoa(sa->sin_addr);
+                    if(address != "127.0.0.1")
+                        return address;
                 }
             }
-            return inet;
+            return "127.0.0.1";
         }
     }
 
@@ -309,9 +312,9 @@ public:
                         std::thread *addMessageThread;
                         buffer[valread] = '\0';
                         std::string myStr = buffer;
-                        g_print("Buffer sent : %d characters as %s\n", strlen(buffer), myStr.c_str());
+                        g_print("\nBuffer sent : %d characters as %s\n", strlen(buffer), myStr.c_str());
                         if (strlen(buffer) > 0) {
-                            messages.push(std::string(buffer));
+                            inMessages.push(std::string(buffer));
                             g_print("Pushed message to queue\n");
                         }
                     }
@@ -328,9 +331,10 @@ public:
         setsockopt(sendMessageSocket, SOL_SOCKET, TCP_NODELAY, &accessTrigger, sizeof(accessTrigger));
 
         station sendStation;
-        sendStation.sin_addr.s_addr = inet_addr("192.168.0.103");
+        sendStation.sin_addr.s_addr = inet_addr(activeIP.c_str());
         sendStation.sin_family = AF_INET;
         sendStation.sin_port = htons(tcpTransferPort);
+
         class bindException {
         };
         class sendException {
@@ -355,6 +359,13 @@ public:
             if (a == -1)
                 throw *(new sendException);
             outmessages.push(message);
+
+//            if(blockChain.size() > 0){
+                Block *myBlock = new Block(myIP, activeIP, message);
+                blockChain.push_back(*myBlock);
+                g_print(myBlock->sendData().c_str());
+//            }
+            g_print("\nCurrent Blockchain Index at:::%d\n", blockChain.size());
         }
         catch (sendException e) {
             g_print("Error sending the message to the receiver...\n");

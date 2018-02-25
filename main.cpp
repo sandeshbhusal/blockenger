@@ -79,10 +79,6 @@ int main(int argc, char *argv[]) {
     alivePeers[1].push_back("Me");
     populateActive();
 
-    for(int i=0; i<100; i++){
-        addReceivedMessage(messageViewer, "HELLO");
-        addSentMessage(messageViewer, "HELLO from the other side", true);
-    }
     app->signal_shutdown().connect(sigc::ptr_fun(quitApplication));
     app->run(*mainWindow);
     broadcastListener->join();

@@ -2,17 +2,18 @@
 #ifndef GTKMMPROJECT_RESOURCES_H
 #define GTKMMPROJECT_RESOURCES_H
 #include <iostream>
-#include "network.h"
+#include "block.h"
 #include <vector>
 #include <queue>
 #include <set>
 
-std::queue<std::string> messages;
+std::queue<std::string> inMessages;
 std::queue<std::string> outmessages;
 
 std::vector<std::string> alivePeers[2];
 
-std::string activeIP;
+std::string activeIP = "127.0.0.1";
+std::string myIP;
 
 Gtk::Window  *mainWindow;
 Gtk::Button  *connectButton;

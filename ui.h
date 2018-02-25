@@ -13,6 +13,7 @@
 std::mutex mu;
 static void buttonClicked(Gtk::Button *mybutton){
     std::string myName = mybutton->get_name();
+    activeIP = myName;
 }
 bool populateActive(){
     Gtk::ListBox *clearBox = userListBox;
@@ -135,11 +136,10 @@ void addReceivedMessage(Gtk::ListBox *listBox, std::string message){
 }
 
 bool updateMessageBoard(){
-
-    if (messages.size() > 0) {
-        g_print("> Update function called for in, %d messages in queue\n", messages.size());
-        std::string getMessage = messages.front();
-        messages.pop();
+    if (inMessages.size() > 0) {
+        g_print("> Update function called for in, %d messages in queue\n", inMessages.size());
+        std::string getMessage = inMessages.front();
+        inMessages.pop();
         if (strlen(getMessage.c_str()) > 0)
             addReceivedMessage(messageViewer, getMessage);
     }
@@ -147,7 +147,7 @@ bool updateMessageBoard(){
 }
 bool updateOutMessageBoard(){
     if (outmessages.size() > 0) {
-        g_print("> Update function called for out, %d out messages in queue\n", messages.size());
+        g_print("> Update function called for out, %d out messages in queue\n", outmessages.size());
         std::string getMessage = outmessages.front();
         outmessages.pop();
         if (strlen(getMessage.c_str()) > 0)
