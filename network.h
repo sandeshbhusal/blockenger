@@ -9,6 +9,7 @@
  */
 #ifndef GTKMMPROJECT_NETWORK_H
 #define GTKMMPROJECT_NETWORK_H
+
 #include <iostream>
 #include <vector>
 #include <thread>
@@ -27,26 +28,27 @@
 
 std::mutex messageMutex;
 
-const int udpListenPort   = 8888;
+const int udpListenPort = 8888;
 const int tcpTransferPort = 7777;
 sockaddr_in inputStation;
 int udpListenSocket;
 int tcpTransferSocket;
 
 bool firstRun = true;
-std::set<std::map<std::string, std::string> > alivePeers; // IP and Name
-void errorMessage(std::string err){
+void errorMessage(std::string err) {
     GtkWidget *dialog = gtk_message_dialog_new(NULL,
                                                GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK_CANCEL, err.c_str());
     gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(GTK_WIDGET(dialog));
 }
-void infoMessage(std::string err){
+
+void infoMessage(std::string err) {
     GtkWidget *dialog = gtk_message_dialog_new(NULL,
                                                GTK_DIALOG_MODAL, GTK_MESSAGE_INFO, GTK_BUTTONS_OK_CANCEL, err.c_str());
     gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(GTK_WIDGET(dialog));
 }
+
 std::thread *broadcastListener;
 std::thread *messageListener;
 std::thread *updateMessageBoardThread;
@@ -57,15 +59,15 @@ int new_socket;
 
 int numConnectedClients = 0;
 
-class Network{
+class Network {
 private:
-    typedef struct sockaddr_in  station;
-    typedef struct sockaddr     stationBase;
+    typedef struct sockaddr_in station;
+    typedef struct sockaddr stationBase;
 public:
-    Network(){
-        if(firstRun){
+    Network() {
+        if (firstRun) {
             int accessTrigger = 1;
-            udpListenSocket   = socket(AF_INET, SOCK_DGRAM,  IPPROTO_UDP);
+            udpListenSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
             tcpTransferSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
             setsockopt(udpListenSocket, SOL_SOCKET, SO_BROADCAST, &accessTrigger, sizeof(accessTrigger));
             setsockopt(udpListenSocket, SOL_SOCKET, SO_REUSEADDR, &accessTrigger, sizeof(accessTrigger));
@@ -78,68 +80,71 @@ public:
             bindBroadcastPort();
             broadcastListener = new std::thread(listenPeerBroadcast);
             bindMessagePort();
-            messageListener   = new std::thread(listenMessage);
+            messageListener = new std::thread(listenMessage);
             memset(&clients, 0, sizeof(clients));
         }
     }
-    static char* getChars(const std::string &input){
+
+    static char *getChars(const std::string &input) {
         auto retVal = new char[input.length()];
         strcpy(retVal, input.c_str());
         return retVal;
     }
-    static void  broadcastAvailability(bool available, std::string &handshake){
+
+    static void broadcastAvailability(bool available, std::string &handshake) {
         messageMutex.lock();
-        if(available){
+        if (available) {
             int accessTrigger = 1;
-            int udpListenSocket   = socket(AF_INET, SOCK_DGRAM,  IPPROTO_UDP);
+            int udpListenSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
             setsockopt(udpListenSocket, SOL_SOCKET, SO_BROADCAST, &accessTrigger, sizeof(accessTrigger));
             setsockopt(udpListenSocket, SOL_SOCKET, SO_REUSEADDR, &accessTrigger, sizeof(accessTrigger));
             setsockopt(udpListenSocket, SOL_SOCKET, SO_REUSEPORT, &accessTrigger, sizeof(accessTrigger));
 
-            std::cout << "Broadcasting availability as "<< available <<" to peers..." << std::endl;
+            std::cout << "Broadcasting availability as " << available << " to peers..." << std::endl;
 
-            station motherShip ;
+            station motherShip;
             memset(&motherShip, 0, sizeof(motherShip));
 
-            motherShip.sin_port         = htons(udpListenPort);
-            motherShip.sin_family       = AF_INET;
-            motherShip.sin_addr.s_addr  = inet_addr("255.255.255.255");
+            motherShip.sin_port = htons(udpListenPort);
+            motherShip.sin_family = AF_INET;
+            motherShip.sin_addr.s_addr = inet_addr("255.255.255.255");
 
             int pings = 5;
-            while(pings--){
-                if(sendto(udpListenSocket, getChars(handshake), strlen(getChars(handshake)), 0, (stationBase*)&motherShip, sizeof(station))== -1){
-                    std::cout << "Could not broadcast address. Retrying for another "<< pings <<" attempts" << std::endl;
+            while (pings--) {
+                if (sendto(udpListenSocket, getChars(handshake), strlen(getChars(handshake)), 0,
+                           (stationBase *) &motherShip, sizeof(station)) == -1) {
+                    std::cout << "Could not broadcast address. Retrying for another " << pings << " attempts"
+                              << std::endl;
                     std::cout << errno;
-                }
-                else{
+                } else {
                     std::cout << "Successfully broadcast!" << std::endl;
-                    return;
+                    if(pings == 3) return;
                 }
             }
             std::cout << "Failed to broadcast. Are you connected?" << std::endl;
-        }
-        else{
+        } else {
             int accessTrigger = 1;
-            int udpListenSocket   = socket(AF_INET, SOCK_DGRAM,  IPPROTO_UDP);
+            int udpListenSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
             setsockopt(udpListenSocket, SOL_SOCKET, SO_BROADCAST, &accessTrigger, sizeof(accessTrigger));
             setsockopt(udpListenSocket, SOL_SOCKET, SO_REUSEADDR, &accessTrigger, sizeof(accessTrigger));
             setsockopt(udpListenSocket, SOL_SOCKET, SO_REUSEPORT, &accessTrigger, sizeof(accessTrigger));
 
-            std::cout << "Broadcasting availability as "<< available <<" to peers..." << std::endl;
-            station motherShip ;
+            std::cout << "Broadcasting availability as " << available << " to peers..." << std::endl;
+            station motherShip;
             memset(&motherShip, 0, sizeof(motherShip));
 
-            motherShip.sin_port         = htons(udpListenPort);
-            motherShip.sin_family       = AF_INET;
-            motherShip.sin_addr.s_addr  = inet_addr("255.255.255.255");
+            motherShip.sin_port = htons(udpListenPort);
+            motherShip.sin_family = AF_INET;
+            motherShip.sin_addr.s_addr = inet_addr("255.255.255.255");
 
             int pings = 5;
-            while(pings--){
-                if(sendto(udpListenSocket, getChars(handshake), strlen(getChars(handshake)), 0, (stationBase*)&motherShip, sizeof(station))== -1){
-                    std::cout << "Could not broadcast address. Retrying for another "<< pings <<" attempts" << std::endl;
+            while (pings--) {
+                if (sendto(udpListenSocket, getChars(handshake), strlen(getChars(handshake)), 0,
+                           (stationBase *) &motherShip, sizeof(station)) == -1) {
+                    std::cout << "Could not broadcast address. Retrying for another " << pings << " attempts"
+                              << std::endl;
                     std::cout << errno;
-                }
-                else{
+                } else {
                     std::cout << "Successfully broadcast!" << std::endl;
                     return;
                 }
@@ -148,100 +153,106 @@ public:
         }
         messageMutex.unlock();
     }
-    static bool  bindBroadcastPort(){
-        udpListenSocket   = socket(AF_INET, SOCK_DGRAM,  IPPROTO_UDP);
+
+    static bool bindBroadcastPort() {
+        udpListenSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
         station me;
         memset(&me, 0, sizeof(me));
         me.sin_port = htons(udpListenPort);
         me.sin_family = AF_INET;
         me.sin_addr.s_addr = INADDR_ANY;
 
-        if(bind(udpListenSocket, (stationBase*)&me, sizeof(me)) == -1){
+        if (bind(udpListenSocket, (stationBase *) &me, sizeof(me)) == -1) {
             std::cout << "Could not bind to interface for broadcasts. " << std::endl;
             g_print("%d", errno);
             return false;
-        }
-        else{
+        } else {
             std::cout << "Successfully bound to UDP port for broadcasts. " << std::endl;
             return true;
         }
     }
-    static bool  bindMessagePort(){
-        inputStation.sin_family      = AF_INET;
+
+    static bool bindMessagePort() {
+        inputStation.sin_family = AF_INET;
         inputStation.sin_addr.s_addr = INADDR_ANY;
-        inputStation.sin_port        = htons(tcpTransferPort);
-        class bindException{};
-        class listenException{};
-        try{
-            int out = bind(tcpTransferSocket, (stationBase *)&inputStation, sizeof(inputStation));
-            if(out<0)
+        inputStation.sin_port = htons(tcpTransferPort);
+        class bindException {
+        };
+        class listenException {
+        };
+        try {
+            int out = bind(tcpTransferSocket, (stationBase *) &inputStation, sizeof(inputStation));
+            if (out < 0)
                 throw new bindException;
             int x = listen(tcpTransferSocket, 3);
-            if(x < 0)
+            if (x < 0)
                 throw new listenException;
         }
-        catch(bindException e) {
+        catch (bindException e) {
             g_print("Could not bind to 192.168.1.1");
             return false;
         }
-        catch(listenException e){
+        catch (listenException e) {
             g_print("Could not listen to anything...");
             return false;
         }
         return true;
     }
-    static void  listenPeerBroadcast(){
-        while(1){
+
+    static void listenPeerBroadcast() {
+        while (true) {
             station incoming;
             std::string incomingIP;
             std::string incomingName;
             char buffer[1024];
             unsigned int len = sizeof(station);
             g_print("Listening who is getting connected\n");
-            auto readBytes = recvfrom(udpListenSocket, buffer, 1024, 0, (stationBase *)&incoming, &len);
-            if(readBytes > 0){
-                if(buffer[0] == 'c'){
+            auto readBytes = recvfrom(udpListenSocket, buffer, 1024, 0, (stationBase *) &incoming, &len);
+            if (readBytes > 0) {
+                if (buffer[0] == 'c') {
                     incomingIP = inet_ntoa(incoming.sin_addr);
                     std::string name;
-                    for(int i=2; i<readBytes-1; i++)
-                        name[i-2] = buffer[i];
-//                std::pair<std::string, std::string> x = std::make_pair(incomingIP, name);
-//                std::map<std::string, std::string> m;
-//                m.insert(x);
-//                alivePeers.insert(m);
-//                infoMessage(buffer);
-                    populateActive(userListBox, buffer);
-                }
-                else{
+                    for (int i = 2; i < readBytes - 1; i++)
+                        name[i - 2] = buffer[i];
+                    incomingName = name;
+                    if(std::find(alivePeers[0].begin(), alivePeers[0].end(), incomingIP) == alivePeers[0].end()) {
+                        alivePeers[0].push_back(incomingIP);
+                        alivePeers[1].push_back(name);
+                    }
+                    else{
+                        g_print("Received broadcast but user already in user list.\n");
+                    }
+                    g_print("New user %s connected", name);
+                } else {
                     g_print("Disconnected: %s ", inet_ntoa(incoming.sin_addr));
-                    for(int i=2; i<readBytes-1; i++)
+                    for (int i = 2; i < readBytes - 1; i++)
                         g_print("%c", buffer[i]);
                 }
             }
         }
     }
-    static int   getInterfaceCount(){
+
+    static int getInterfaceCount() {
         int inet = 0, inet6 = 0;
         struct ifaddrs *interfaces, *iterator;
         int family, s, n;
-        if(getifaddrs(&interfaces) == -1){
+        if (getifaddrs(&interfaces) == -1) {
             errorMessage("Could not bind connections!");
             return -1;
-        }
-        else{
-            for(iterator = interfaces; iterator != NULL; iterator = iterator->ifa_next) {
-                if(iterator->ifa_addr->sa_family == AF_INET){
+        } else {
+            for (iterator = interfaces; iterator != NULL; iterator = iterator->ifa_next) {
+                if (iterator->ifa_addr->sa_family == AF_INET) {
                     inet++;
-                }
-                else if(iterator->ifa_addr->sa_family == AF_INET6){
+                } else if (iterator->ifa_addr->sa_family == AF_INET6) {
                     inet6++;
                 }
             }
             return inet;
         }
     }
-    static void  listenMessage(){
-        while(true) {
+
+    static void listenMessage() {
+        while (true) {
             int sd;
             FD_ZERO(&readfds);
             FD_SET(tcpTransferSocket, &readfds);
@@ -266,7 +277,7 @@ public:
                 }
                 std::string a(inet_ntoa(inputStation.sin_addr));
                 g_print("New connection , socket fd is %d , ip is : %s , port : %d\n", new_socket,
-                       inet_ntoa(inputStation.sin_addr), ntohs(inputStation.sin_port));
+                        inet_ntoa(inputStation.sin_addr), ntohs(inputStation.sin_port));
 
                 for (int i = 0; i < 30; i++) {
                     if (clients[i] == 0) {
@@ -283,13 +294,13 @@ public:
                 socklen_t size = sizeof(inputStation);
                 if (FD_ISSET(sd, &readfds)) {
                     int valread;
-                    memset(&buffer,0, sizeof(buffer));
-                    while((valread = recv(sd, (char*)&buffer, 1024, 0)) > 0 ){
+                    memset(&buffer, 0, sizeof(buffer));
+                    while ((valread = recv(sd, (char *) &buffer, 1024, 0)) > 0) {
                         std::thread *addMessageThread;
                         buffer[valread] = '\0';
                         std::string myStr = buffer;
                         g_print("Buffer sent : %d characters as %s\n", strlen(buffer), myStr.c_str());
-                        if(strlen(buffer) > 0){
+                        if (strlen(buffer) > 0) {
                             messages.push(std::string(buffer));
                             g_print("Pushed message to queue\n");
                         }
@@ -299,18 +310,21 @@ public:
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }
-    static bool  sendMessage(const std::string &message){
+
+    static bool sendMessage(const std::string &message) {
         int accessTrigger = 1;
         int sendMessageSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
         setsockopt(sendMessageSocket, SOL_SOCKET, SO_REUSEADDR, &accessTrigger, sizeof(accessTrigger));
-        setsockopt(sendMessageSocket, SOL_SOCKET, TCP_NODELAY , &accessTrigger, sizeof(accessTrigger));
+        setsockopt(sendMessageSocket, SOL_SOCKET, TCP_NODELAY, &accessTrigger, sizeof(accessTrigger));
 
         station sendStation;
-        sendStation.sin_addr.s_addr = inet_addr("127.0.0.1");
+        sendStation.sin_addr.s_addr = inet_addr("192.168.0.103");
         sendStation.sin_family = AF_INET;
         sendStation.sin_port = htons(tcpTransferPort);
-        class bindException {};
-        class sendException {};
+        class bindException {
+        };
+        class sendException {
+        };
         try {
             int b = connect(sendMessageSocket, (stationBase *) &sendStation, sizeof(station));
             if (b < 0) {
@@ -319,7 +333,7 @@ public:
             }
         }
         catch (bindException e) {
-            if(errno != 106)
+            if (errno != 106)
                 g_print("Error binding to the port to send data...\n");
         }
         catch (...) {
@@ -341,4 +355,5 @@ public:
         return true;
     }
 };
+
 #endif

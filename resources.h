@@ -5,9 +5,12 @@
 #include "network.h"
 #include <vector>
 #include <queue>
+#include <set>
 
 std::queue<std::string> messages;
 std::queue<std::string> outmessages;
+
+std::vector<std::string> alivePeers[2];
 
 Gtk::Window  *mainWindow;
 Gtk::Button  *connectButton;

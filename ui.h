@@ -7,33 +7,41 @@
 #include <gtkmm/entry.h>
 #include <gtkmm/box.h>
 #include <mutex>
+#include <set>
 
 std::mutex mu;
 
-void populateActive(Gtk::ListBox *listBox, std::string name){
-    Gtk::ListBoxRow *myRow;
-    Gtk::Button *myButton;
-    Gtk::Box *chatRow;
-    Gtk::Label *l2;
-    Gtk::Image *avatar;
-    myRow = new Gtk::ListBoxRow;
-    myButton = new Gtk::Button();
-    l2    = new Gtk::Label(name);
-    l2->set_alignment(0.1, 0.5);
-    avatar = new Gtk::Image;
-    int x = 1;
-    std::string imagePath = "../"+userImages[x];
-    avatar->set(imagePath);
-    avatar->set_size_request(40, 40);
-    chatRow = new Gtk::Box();
-    chatRow->set_size_request(0, 40);
-    chatRow->pack_start(*avatar);
-    chatRow->pack_start(*l2);
-    myButton->set_relief(Gtk::ReliefStyle::RELIEF_NONE);
-    myButton->add(*chatRow);
-    myRow->add(*myButton);
-    listBox->append(*myRow);
-    listBox->show_all();
+bool populateActive(){
+    for(int i=0; i< alivePeers[0].size(); i++){
+        std::string name;
+        name = alivePeers[0].at(i);
+        if(name.length() > 0) {
+            Gtk::ListBox *listBox = userListBox;
+            Gtk::ListBoxRow *myRow;
+            Gtk::Button *myButton;
+            Gtk::Box *chatRow;
+            Gtk::Label *l2;
+            Gtk::Image *avatar;
+            myRow = new Gtk::ListBoxRow;
+            myButton = new Gtk::Button();
+            l2 = new Gtk::Label(name);
+            l2->set_alignment(0.1, 0.5);
+            avatar = new Gtk::Image;
+            int x = 1;
+            std::string imagePath = "../" + userImages[x];
+            avatar->set(imagePath);
+            avatar->set_size_request(40, 40);
+            chatRow = new Gtk::Box();
+            chatRow->set_size_request(0, 40);
+            chatRow->pack_start(*avatar);
+            chatRow->pack_start(*l2);
+            myButton->set_relief(Gtk::ReliefStyle::RELIEF_NONE);
+            myButton->add(*chatRow);
+            myRow->add(*myButton);
+            listBox->append(*myRow);
+            listBox->show_all();
+        }
+    }
 }
 
 void addSentMessage(Gtk::ListBox *listBox, std::string message, bool sent){
