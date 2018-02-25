@@ -75,7 +75,7 @@ public:
             setsockopt(tcpTransferSocket, SOL_SOCKET, SO_REUSEADDR, &accessTrigger, sizeof(accessTrigger));
             setsockopt(tcpTransferSocket, SOL_SOCKET, SO_REUSEPORT, &accessTrigger, sizeof(accessTrigger));
             setsockopt(tcpTransferSocket, SOL_SOCKET, TCP_NODELAY, &accessTrigger, sizeof(accessTrigger));
-            std::string handshake = "c|bhusal";
+            std::string handshake = "c|me";
             broadcastAvailability(true, handshake);
             bindBroadcastPort();
             broadcastListener = new std::thread(listenPeerBroadcast);
@@ -109,7 +109,7 @@ public:
             motherShip.sin_family = AF_INET;
             motherShip.sin_addr.s_addr = inet_addr("255.255.255.255");
 
-            int pings = 5;
+            int pings = 30;
             while (pings--) {
                 if (sendto(udpListenSocket, getChars(handshake), strlen(getChars(handshake)), 0,
                            (stationBase *) &motherShip, sizeof(station)) == -1) {
@@ -117,9 +117,10 @@ public:
                               << std::endl;
                     std::cout << errno;
                 } else {
-                    std::cout << "Successfully broadcast!" << std::endl;
+                    std::cout << "Successfully broadcast connection request!" << std::endl;
                     if(pings == 3) return;
                 }
+                std::this_thread::sleep_for(std::chrono::milliseconds(50));
             }
             std::cout << "Failed to broadcast. Are you connected?" << std::endl;
         } else {
@@ -137,7 +138,7 @@ public:
             motherShip.sin_family = AF_INET;
             motherShip.sin_addr.s_addr = inet_addr("255.255.255.255");
 
-            int pings = 5;
+            int pings = 30;
             while (pings--) {
                 if (sendto(udpListenSocket, getChars(handshake), strlen(getChars(handshake)), 0,
                            (stationBase *) &motherShip, sizeof(station)) == -1) {
@@ -145,9 +146,10 @@ public:
                               << std::endl;
                     std::cout << errno;
                 } else {
-                    std::cout << "Successfully broadcast!" << std::endl;
+                    std::cout << "Successfully broadcast disconnection request!" << std::endl;
                     return;
                 }
+                std::this_thread::sleep_for(std::chrono::milliseconds(50));
             }
             std::cout << "Failed to broadcast. Are you connected?" << std::endl;
         }
@@ -208,27 +210,35 @@ public:
             unsigned int len = sizeof(station);
             g_print("Listening who is getting connected\n");
             auto readBytes = recvfrom(udpListenSocket, buffer, 1024, 0, (stationBase *) &incoming, &len);
-            if (readBytes > 0) {
+            g_print("Read %d bytes \n", readBytes);
+            if (strlen(buffer) > 0) {
+                g_print("got some data as: %s in UDP \n", buffer);
                 if (buffer[0] == 'c') {
+                    g_print("Connected.\n");
                     incomingIP = inet_ntoa(incoming.sin_addr);
-                    std::string name;
-                    for (int i = 2; i < readBytes - 1; i++)
-                        name[i - 2] = buffer[i];
-                    incomingName = name;
-                    if(std::find(alivePeers[0].begin(), alivePeers[0].end(), incomingIP) == alivePeers[0].end()) {
-                        alivePeers[0].push_back(incomingIP);
-                        alivePeers[1].push_back(name);
-                    }
-                    else{
+                    std::string name = std::string(buffer);
+                    incomingName = name.substr(2, name.size()-1);
+                    if (std::find(alivePeers[0].begin(), alivePeers[0].end(), incomingIP) == alivePeers[0].end()) {
+                        alivePeers[0].push_back(std::string(incomingIP));
+                        alivePeers[1].push_back(incomingName);
+                        g_print("New user connected! as %s\n", incomingName.c_str());
+                        populateActive();
+                    } else {
                         g_print("Received broadcast but user already in user list.\n");
                     }
-                    g_print("New user %s connected", name);
                 } else {
+                    incomingIP = inet_ntoa(incoming.sin_addr);
                     g_print("Disconnected: %s ", inet_ntoa(incoming.sin_addr));
-                    for (int i = 2; i < readBytes - 1; i++)
-                        g_print("%c", buffer[i]);
+                    std::string name = std::string(buffer);
+                    incomingName = name.substr(2, name.size()-1);
+                    if(int pos = (std::find(alivePeers[0].begin(), alivePeers[0].end(), incomingIP)) != alivePeers[0].end()){
+                        alivePeers[0].erase(alivePeers[0].begin()+pos);
+                        alivePeers[1].erase(alivePeers[1].begin()+pos);
+                        populateActive();
+                    }
                 }
             }
+
         }
     }
 

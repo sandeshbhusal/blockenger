@@ -12,6 +12,8 @@ std::queue<std::string> outmessages;
 
 std::vector<std::string> alivePeers[2];
 
+std::string activeIP;
+
 Gtk::Window  *mainWindow;
 Gtk::Button  *connectButton;
 Gtk::Entry   *myName;

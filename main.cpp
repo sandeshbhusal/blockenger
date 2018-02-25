@@ -38,7 +38,7 @@ void sendMessage(){
 }
 void quitApplication(){
     messageMutex.unlock();
-    std::string handshake = "d|bhusal";
+    std::string handshake = "d|me";
     mynet->broadcastAvailability(false, handshake);
     g_print("Exiting the application...");
     exit(0);
@@ -75,11 +75,14 @@ int main(int argc, char *argv[]) {
     sigc::slot<bool> new_slot = sigc::ptr_fun(&updateOutMessageBoard);
     Glib::signal_timeout().connect(new_slot, 50);
 
+    alivePeers[0].push_back("127.0.0.1");
+    alivePeers[1].push_back("Me");
+    populateActive();
 
-    sigc::slot<bool> user_slot = sigc::ptr_fun(&populateActive);
-    Glib::signal_timeout().connect(user_slot, 150);
-
-
+    for(int i=0; i<100; i++){
+        addReceivedMessage(messageViewer, "HELLO");
+        addSentMessage(messageViewer, "HELLO from the other side", true);
+    }
     app->signal_shutdown().connect(sigc::ptr_fun(quitApplication));
     app->run(*mainWindow);
     broadcastListener->join();

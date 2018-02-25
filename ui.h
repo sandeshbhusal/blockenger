@@ -8,13 +8,22 @@
 #include <gtkmm/box.h>
 #include <mutex>
 #include <set>
+#include <gtkmm/togglebutton.h>
 
 std::mutex mu;
-
+static void buttonClicked(Gtk::Button *mybutton){
+    std::string myName = mybutton->get_name();
+}
 bool populateActive(){
+    Gtk::ListBox *clearBox = userListBox;
+    std::vector<Gtk::Widget* > rows= clearBox->get_children();
+    for(int i=0; i<rows.size(); i++)
+        clearBox->remove(*rows.at(i));
+
     for(int i=0; i< alivePeers[0].size(); i++){
         std::string name;
-        name = alivePeers[0].at(i);
+        name = alivePeers[1].at(i);
+        g_print("Total friends: %d %s\n", alivePeers[0].size(), alivePeers[1][i].c_str());
         if(name.length() > 0) {
             Gtk::ListBox *listBox = userListBox;
             Gtk::ListBoxRow *myRow;
@@ -24,10 +33,12 @@ bool populateActive(){
             Gtk::Image *avatar;
             myRow = new Gtk::ListBoxRow;
             myButton = new Gtk::Button();
+            myButton->set_name(alivePeers[0].at(i));
+            myButton->signal_clicked().connect(sigc::bind(sigc::ptr_fun(&buttonClicked), myButton));
             l2 = new Gtk::Label(name);
             l2->set_alignment(0.1, 0.5);
             avatar = new Gtk::Image;
-            int x = 1;
+            int x = i%6;
             std::string imagePath = "../" + userImages[x];
             avatar->set(imagePath);
             avatar->set_size_request(40, 40);
@@ -111,7 +122,7 @@ void addReceivedMessage(Gtk::ListBox *listBox, std::string message){
 
     Gdk::RGBA *myColor;
     myColor = new Gdk::RGBA;
-    myColor->set_rgba(0, 0.603, 0.108, 1);
+    myColor->set_rgba(0.62, 0.7, 0.73, 1);
     myLabel->override_background_color(*myColor);
 
     myColor->set_rgba(1, 1, 1, 1);
