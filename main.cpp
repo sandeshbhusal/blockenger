@@ -72,10 +72,10 @@ int main(int argc, char *argv[]) {
     mynet = new Network;
 
     sigc::slot<bool> my_slot = sigc::ptr_fun(&updateMessageBoard);
-    Glib::signal_timeout().connect(my_slot, 500);
+    Glib::signal_timeout().connect(my_slot, 100);
 
     sigc::slot<bool> new_slot = sigc::ptr_fun(&updateOutMessageBoard);
-    Glib::signal_timeout().connect(new_slot, 500);
+    Glib::signal_timeout().connect(new_slot, 100);
 
 
     app->signal_shutdown().connect(sigc::ptr_fun(quitApplication));

@@ -124,10 +124,6 @@ bool updateMessageBoard(){
         if (strlen(getMessage.c_str()) > 0)
             addReceivedMessage(messageViewer, getMessage);
     }
-    else{
-        g_print("No messages in input queue\n");
-    }
-
     return true;
 }
 bool updateOutMessageBoard(){
@@ -138,9 +134,6 @@ bool updateOutMessageBoard(){
         if (strlen(getMessage.c_str()) > 0)
             g_print("%s", getMessage.c_str());
             addSentMessage(messageViewer, getMessage, true);
-    }
-    else{
-        g_print("No messages in out messages queue\n");
     }
     return true;
 }

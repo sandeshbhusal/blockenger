@@ -289,7 +289,7 @@ public:
                         buffer[valread] = '\0';
                         std::string myStr = buffer;
                         g_print("Buffer sent : %d characters as %s\n", strlen(buffer), myStr.c_str());
-                        if(valread > 2){
+                        if(strlen(buffer) > 0){
                             messages.push(std::string(buffer));
                             g_print("Pushed message to queue\n");
                         }
@@ -331,10 +331,8 @@ public:
             if (a == -1)
                 throw *(new sendException);
             outmessages.push(message);
-//            addSentMessage(messageViewer, message, true);
         }
         catch (sendException e) {
-//            addSentMessage(messageViewer, message, false);
             g_print("Error sending the message to the receiver...\n");
             g_print("%d", errno);
             return false;
