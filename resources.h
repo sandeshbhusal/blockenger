@@ -1,8 +1,13 @@
 
 #ifndef GTKMMPROJECT_RESOURCES_H
 #define GTKMMPROJECT_RESOURCES_H
-#include<iostream>
+#include <iostream>
 #include "network.h"
+#include <vector>
+#include <queue>
+
+std::queue<std::string> messages;
+std::queue<std::string> outmessages;
 
 Gtk::Window  *mainWindow;
 Gtk::Button  *connectButton;

@@ -57,12 +57,18 @@ netdb.h
 -
 mutex
 -
+netinet/tcp.h
+-
 
 /home/sandesh/projects/bitenger/resources.h
 iostream
 -
 network.h
 /home/sandesh/projects/bitenger/network.h
+vector
+-
+queue
+-
 
 /home/sandesh/projects/bitenger/ui.h
 resources.h

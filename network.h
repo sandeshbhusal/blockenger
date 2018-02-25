@@ -23,6 +23,7 @@
 #include <bits/stdc++.h>
 #include <netdb.h>
 #include <mutex>
+#include <netinet/tcp.h>
 
 std::mutex messageMutex;
 
@@ -48,6 +49,7 @@ void infoMessage(std::string err){
 }
 std::thread *broadcastListener;
 std::thread *messageListener;
+std::thread *updateMessageBoardThread;
 fd_set readfds;
 int max_sd;
 int activity;
@@ -70,6 +72,7 @@ public:
             setsockopt(udpListenSocket, SOL_SOCKET, SO_REUSEPORT, &accessTrigger, sizeof(accessTrigger));
             setsockopt(tcpTransferSocket, SOL_SOCKET, SO_REUSEADDR, &accessTrigger, sizeof(accessTrigger));
             setsockopt(tcpTransferSocket, SOL_SOCKET, SO_REUSEPORT, &accessTrigger, sizeof(accessTrigger));
+            setsockopt(tcpTransferSocket, SOL_SOCKET, TCP_NODELAY, &accessTrigger, sizeof(accessTrigger));
             std::string handshake = "c|bhusal";
             broadcastAvailability(true, handshake);
             bindBroadcastPort();
@@ -238,7 +241,7 @@ public:
         }
     }
     static void  listenMessage(){
-        while(1) {
+        while(true) {
             int sd;
             FD_ZERO(&readfds);
             FD_SET(tcpTransferSocket, &readfds);
@@ -262,13 +265,13 @@ public:
                     exit(EXIT_FAILURE);
                 }
                 std::string a(inet_ntoa(inputStation.sin_addr));
-                printf("New connection , socket fd is %d , ip is : %s , port : %d\n", new_socket,
+                g_print("New connection , socket fd is %d , ip is : %s , port : %d\n", new_socket,
                        inet_ntoa(inputStation.sin_addr), ntohs(inputStation.sin_port));
 
                 for (int i = 0; i < 30; i++) {
                     if (clients[i] == 0) {
                         clients[i] = new_socket;
-                        printf("Adding to list of sockets as %d\n", i);
+                        g_print("Adding to list of sockets as %d\n", i);
                         numConnectedClients++;
                         break;
                     }
@@ -280,42 +283,30 @@ public:
                 socklen_t size = sizeof(inputStation);
                 if (FD_ISSET(sd, &readfds)) {
                     int valread;
-//                    if ((valread = read(sd, buffer, 1023)) == 0) {
-//                        getpeername(sd, (struct sockaddr *) &inputStation, (socklen_t *) &(size));
-//                        printf("Host disconnected , ip %s , port %d \n", inet_ntoa(inputStation.sin_addr),
-//                               ntohs(inputStation.sin_port));
-//                        close(sd);
-//                        clients[i] = 0;
-//                    } else{
-//                        char newBuff[1024];
-//                        strncpy(newBuff, buffer, valread);
-//                        newBuff[valread] = '\0';
-//                        g_print("\n%s\n", buffer);
-//                        strcpy(buffer, "");
-//                        addReceivedMessage(messageViewer, newBuff);
-//                    }
-                    while((valread = recv(sd, buffer, 1024, 0)) > 0 ){
+                    memset(&buffer,0, sizeof(buffer));
+                    while((valread = recv(sd, (char*)&buffer, 1024, 0)) > 0 ){
+                        std::thread *addMessageThread;
                         buffer[valread] = '\0';
                         std::string myStr = buffer;
                         g_print("Buffer sent : %d characters as %s\n", strlen(buffer), myStr.c_str());
                         if(valread > 2){
-                            addReceivedMessage(messageViewer, myStr);
+                            messages.push(std::string(buffer));
+                            g_print("Pushed message to queue\n");
                         }
                     }
                 }
             }
-//            const auto wait_duration = std::chrono::milliseconds(50);
-//            std::this_thread::sleep_for(wait_duration);
-//            messageListener = new std::thread(listenMessage);
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }
     static bool  sendMessage(const std::string &message){
         int accessTrigger = 1;
         int sendMessageSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
         setsockopt(sendMessageSocket, SOL_SOCKET, SO_REUSEADDR, &accessTrigger, sizeof(accessTrigger));
+        setsockopt(sendMessageSocket, SOL_SOCKET, TCP_NODELAY , &accessTrigger, sizeof(accessTrigger));
 
         station sendStation;
-        sendStation.sin_addr.s_addr = inet_addr("192.168.0.102");
+        sendStation.sin_addr.s_addr = inet_addr("127.0.0.1");
         sendStation.sin_family = AF_INET;
         sendStation.sin_port = htons(tcpTransferPort);
         class bindException {};
@@ -339,8 +330,11 @@ public:
             ssize_t a = send(sendMessageSocket, message.c_str(), message.length(), 0);
             if (a == -1)
                 throw *(new sendException);
+            outmessages.push(message);
+//            addSentMessage(messageViewer, message, true);
         }
         catch (sendException e) {
+//            addSentMessage(messageViewer, message, false);
             g_print("Error sending the message to the receiver...\n");
             g_print("%d", errno);
             return false;

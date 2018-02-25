@@ -7,7 +7,9 @@
 #include <gtkmm/entry.h>
 #include <gtkmm/box.h>
 #include <mutex>
+
 std::mutex mu;
+
 void populateActive(Gtk::ListBox *listBox, std::string name){
     Gtk::ListBoxRow *myRow;
     Gtk::Button *myButton;
@@ -33,6 +35,7 @@ void populateActive(Gtk::ListBox *listBox, std::string name){
     listBox->append(*myRow);
     listBox->show_all();
 }
+
 void addSentMessage(Gtk::ListBox *listBox, std::string message, bool sent){
     mu.lock();
     if(sent){
@@ -48,12 +51,13 @@ void addSentMessage(Gtk::ListBox *listBox, std::string message, bool sent){
         hisLabel->set_line_wrap(true);
 
 
-        Gdk::RGBA myColor;
-        myColor.set_rgba(0, 0.631, 1, 1);
-        hisLabel->override_background_color(myColor);
+        Gdk::RGBA *myColor;
+        myColor = new Gdk::RGBA;
+        myColor->set_rgba(0, 0.631, 1, 1);
+        hisLabel->override_background_color(*myColor);
 
-        myColor.set_rgba(1, 1, 1, 1);
-        hisLabel->override_color(myColor);
+        myColor->set_rgba(1, 1, 1, 1);
+        hisLabel->override_color(*myColor);
 
         messageItemOut->add(*hisLabel);
         listBox->append(*messageItemOut);
@@ -72,12 +76,13 @@ void addSentMessage(Gtk::ListBox *listBox, std::string message, bool sent){
         hisLabel->set_line_wrap(true);
 
 
-        Gdk::RGBA myColor;
-        myColor.set_rgba(1, 0, 0, 1);
-        hisLabel->override_background_color(myColor);
+        Gdk::RGBA *myColor;
+        myColor = new Gdk::RGBA;
+        myColor->set_rgba(1, 0, 0, 1);
+        hisLabel->override_background_color(*myColor);
 
-        myColor.set_rgba(1, 1, 1, 1);
-        hisLabel->override_color(myColor);
+        myColor->set_rgba(1, 1, 1, 1);
+        hisLabel->override_color(*myColor);
 
         messageItemOut->add(*hisLabel);
         listBox->append(*messageItemOut);
@@ -96,17 +101,48 @@ void addReceivedMessage(Gtk::ListBox *listBox, std::string message){
     myLabel->set_margin_top(10);
     myLabel->set_margin_bottom(10);
 
-    Gdk::RGBA myColor;
-    myColor.set_rgba(0, 0.603, 0.108, 1);
-    myLabel->override_background_color(myColor);
+    Gdk::RGBA *myColor;
+    myColor = new Gdk::RGBA;
+    myColor->set_rgba(0, 0.603, 0.108, 1);
+    myLabel->override_background_color(*myColor);
 
-    myColor.set_rgba(1, 1, 1, 1);
-    myLabel->override_color(myColor);
+    myColor->set_rgba(1, 1, 1, 1);
+    myLabel->override_color(*myColor);
 
     messageItemIn->add(*myLabel);
     listBox->append(*messageItemIn);
     listBox->show_all();
     mu.unlock();
+}
+
+bool updateMessageBoard(){
+
+    if (messages.size() > 0) {
+        g_print("> Update function called for in, %d messages in queue\n", messages.size());
+        std::string getMessage = messages.front();
+        messages.pop();
+        if (strlen(getMessage.c_str()) > 0)
+            addReceivedMessage(messageViewer, getMessage);
+    }
+    else{
+        g_print("No messages in input queue\n");
+    }
+
+    return true;
+}
+bool updateOutMessageBoard(){
+    if (outmessages.size() > 0) {
+        g_print("> Update function called for out, %d out messages in queue\n", messages.size());
+        std::string getMessage = outmessages.front();
+        outmessages.pop();
+        if (strlen(getMessage.c_str()) > 0)
+            g_print("%s", getMessage.c_str());
+            addSentMessage(messageViewer, getMessage, true);
+    }
+    else{
+        g_print("No messages in out messages queue\n");
+    }
+    return true;
 }
 
 #endif

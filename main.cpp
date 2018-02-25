@@ -25,10 +25,15 @@ void connectNetwork(Glib::ustring const &in){
     }
 }
 void sendMessage(){
-    if(mynet->sendMessage(myMessage->get_text()))
-        addSentMessage(messageViewer, myMessage->get_text(), true);
-    else
-        addSentMessage(messageViewer, myMessage->get_text(), false);
+    g_print("Call to send message.\n");
+    if(mynet->sendMessage(myMessage->get_text())){
+        g_print("Successful sending.\n");
+//        addSentMessage(messageViewer, myMessage->get_text(), true);
+    }
+    else{
+        g_print("Un successful sending.\n");
+//        addSentMessage(messageViewer, myMessage->get_text(), false);
+    }
     myMessage->set_text("");
 }
 void quitApplication(){
@@ -42,14 +47,14 @@ int main(int argc, char *argv[]) {
     using namespace Gtk;
     using namespace std;
     auto app = Gtk::Application::create(argc, argv, "org.gtkmm.examples.base");
-    auto builder = Gtk::Builder::create_from_file("../mainscreen.glade");
-//
+//    auto builder = Gtk::Builder::create_from_file("../mainscreen.glade");
+
 //    builder->get_widget("loginWindow", mainWindow);
 //    builder->get_widget("connectButton", connectButton);
 //    builder->get_widget("username", myName);
 //    connectButton->signal_clicked().connect(sigc::bind(sigc::ptr_fun(&connectNetwork), "string"));
 
-    builder = Gtk::Builder::create_from_file("../mainWindow.glade");
+    auto builder = Gtk::Builder::create_from_file("../mainWindow.glade");
     builder->get_widget("mainWindow", mainWindow);
 
     builder->get_widget("listbox1", userListBox);
@@ -65,6 +70,13 @@ int main(int argc, char *argv[]) {
 
     myMessage->signal_activate().connect(sigc::ptr_fun(&sendMessage));
     mynet = new Network;
+
+    sigc::slot<bool> my_slot = sigc::ptr_fun(&updateMessageBoard);
+    Glib::signal_timeout().connect(my_slot, 500);
+
+    sigc::slot<bool> new_slot = sigc::ptr_fun(&updateOutMessageBoard);
+    Glib::signal_timeout().connect(new_slot, 500);
+
 
     app->signal_shutdown().connect(sigc::ptr_fun(quitApplication));
     app->run(*mainWindow);
