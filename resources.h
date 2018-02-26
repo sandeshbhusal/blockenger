@@ -54,7 +54,7 @@ std::string XOR_Encryption(std::string toBeEncrypted, std::string sKey){
     return sEncrypted;
 }
 std::string encryptMessage(std::string message, std::string myIP, std::string hisIP){
-
+    return XOR_Encryption(message, (myIP+hisIP));
 }
 std::string decryptMessage(std::string message, std::string myIP, std::string hisIP){
 

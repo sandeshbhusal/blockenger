@@ -14,6 +14,7 @@
 std::mutex mu;
 static void buttonClicked(Gtk::Button *mybutton){
     std::string myName = mybutton->get_name();
+    g_print("Active IP set to : %s \n", myName.c_str());
     activeIP = myName;
 }
 
@@ -130,6 +131,7 @@ void addReceivedMessage(Gtk::ListBox *listBox, std::string message){
     mu.lock();
     Gtk::ListBoxRow *messageItemIn = new Gtk::ListBoxRow();
     Gtk::Label *myLabel = new Gtk::Label(message);
+    messageItemIn->set_size_request(100, 0);
     myLabel->set_alignment(0, 0.5);
     myLabel->set_padding(10, 10);
     myLabel->set_line_wrap(true);
@@ -153,7 +155,7 @@ void addReceivedMessage(Gtk::ListBox *listBox, std::string message){
 
 bool updateMessageBoard(){
     if (inMessages.size() > 0) {
-        g_print("> Update function called for in, %d messages in queue\n", inMessages.size());
+//        g_print("> Update function called for in, %d messages in queue\n", inMessages.size());
         std::string getMessage = inMessages.front();
         inMessages.pop();
         if (strlen(getMessage.c_str()) > 0)
@@ -163,12 +165,12 @@ bool updateMessageBoard(){
 }
 bool updateOutMessageBoard(){
     if (outmessages.size() > 0) {
-//        g_print("> Update function called for out, %d out messages in queue\n", outmessages.size());
+        g_print("> Update function called for out, %d out messages in queue\n", outmessages.size());
         std::string getMessage = outmessages.front();
         outmessages.pop();
         if (strlen(getMessage.c_str()) > 0)
             addSentMessage(messageViewer, getMessage, true);
-//            g_print("%s", getMessage.c_str());
+            g_print("%s", getMessage.c_str());
     }
     return true;
 }

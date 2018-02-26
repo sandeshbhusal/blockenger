@@ -43,7 +43,7 @@ public:
         return picosha2::hash256_hex_string(getStringFormToCalculate());
     }
     std::string getStringFormToCalculate(){
-        return _sender+" "+_receiver+" "+_data+" " + _prevHash;
+        return (_sender+" "+_receiver+" "+_data+" " + _prevHash);
     }
     std::string getStringFormToSend(){
         return getStringFormToCalculate() + " " + _currentHash;

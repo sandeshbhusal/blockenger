@@ -355,7 +355,7 @@ public:
                         std::thread *addMessageThread;
                         buffer[valread] = '\0';
                         std::string myStr = buffer;
-//                        g_print("\nBuffer sent : %d characters as %s\n", strlen(buffer), myStr.c_str());
+                        g_print("\nBuffer sent : %d characters as %s\n", strlen(buffer), myStr.c_str());
                         if (strlen(buffer) > 0) {
                             inMessages.push(std::string(buffer));
 //                            g_print("Pushed message to queue\n");
@@ -367,7 +367,27 @@ public:
         }
     }
     static bool sendMessage(const std::string &message) {
+        Block *myBlock;
         int successfulSents = 0;
+        std::string encMessage = encryptMessage(message, myIP, activeIP);
+        if(blockChain.size() > 0){
+            int blockChainIndex = blockChain.size();
+            myBlock = new Block(myIP, activeIP, message, blockChain.at(blockChainIndex-1)._currentHash);
+            blockChain.push_back(*myBlock);
+            g_print("Now I will add a new block\n");
+            g_print("%s\n", myBlock->getStringFormToSend().c_str());
+        }
+        else{
+            Block *genGenesis;
+            Block genesisBlock = genGenesis->createGenesisBlock();
+            blockChain.push_back(genesisBlock);
+            g_print("There was no genesis block, so I had to add one.\n");
+
+            myBlock = new Block(myIP, activeIP, message, genesisBlock._currentHash);
+            blockChain.push_back(*myBlock);
+            g_print("Now I will add a new block after adding the genesis block.\n");
+        }
+
         for(int i=0; i < alivePeers[0].size(); i++){
             int accessTrigger = 1;
             int sendMessageSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -389,7 +409,11 @@ public:
                     g_print("%d", errno);
                     throw *(new bindException);
                 }
-                ssize_t a = send(sendMessageSocket, message.c_str(), message.length(), 0);
+                g_print("\n\n%s\n\n", myBlock->getStringFormToSend().c_str());
+                char *message = new char[myBlock->getStringFormToSend().length()];
+                strcpy(message, myBlock->getStringFormToSend().c_str());
+                message[myBlock->getStringFormToSend().length()] = '\0';
+                ssize_t a = send(sendMessageSocket, message, strlen(message), 0);
                 if (a == -1)
                     throw *(new sendException);
                 g_print("Sent to: %s \n", alivePeers[0][i].c_str());
@@ -410,25 +434,8 @@ public:
             close(sendMessageSocket);
         }
         if(successfulSents > 1){    // At least one computer must receive the block.
-            outmessages.push(message);
-            if(blockChain.size() > 0){
-                int blockChainIndex = blockChain.size();
-                Block *myBlock = new Block(myIP, activeIP, message, blockChain.at(blockChainIndex-1)._currentHash);
-                blockChain.push_back(*myBlock);
-                g_print("Now I will add a new block\n");
-                return true;
-            }
-            else{
-                Block *genGenesis;
-                Block genesisBlock = genGenesis->createGenesisBlock();
-                blockChain.push_back(genesisBlock);
-                g_print("There was no genesis block, so I had to add one.\n");
-
-                Block *myBlock = new Block(myIP, activeIP, message, genesisBlock.calculateHash());
-                blockChain.push_back(*myBlock);
-                g_print("Now I will add a new block after adding the genesis block.\n");
-                return true;
-            }
+            outmessages.push(myBlock->getStringFormToSend());
+            return true;
         }
         return false;
     }
