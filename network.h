@@ -67,9 +67,9 @@ public:
             sendPacketRequest();
             bindBroadcastPort();
             bindMessagePort();
+            broadcastListener = new std::thread(listenPeerBroadcast);
             memset(&clients, 0, sizeof(clients));
             myIP = getOwnIP();
-            broadcastListener = new std::thread(listenPeerBroadcast);
             messageListener = new std::thread(listenMessage);
             g_print("NETWORK SETUP COMPLETED.\n");
         }
@@ -227,7 +227,26 @@ public:
                     }
                 }
                 else if(buffer[0] == 'p'){
-                    g_print("Packet request received.\n");
+                    incomingIP = inet_ntoa(incoming.sin_addr);
+                    int udpMessenger = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+                    if(udpMessenger == -1){
+                        g_print("Could not create messenger for incoming packet\n");
+                    }
+                    else{
+                        station receiver;
+                        memset(&receiver, 0, sizeof(receiver));
+                        receiver.sin_family = AF_INET;
+                        receiver.sin_port   = htons(udpListenPort);
+                        receiver.sin_addr.s_addr  = inet_addr(incomingIP.c_str());
+                        if(sendto(udpMessenger, "c|bhusal", strlen("c|bhusal"), 0,
+                                  (stationBase *) &receiver, sizeof(station)) == -1){
+                            g_print("Could not send packet :'(\n");
+                            g_print("%d\n", errno);
+                        }
+                        else{
+                            g_print("Packet size sent successfully\n");
+                        }
+                    }
                 }
             }
         }
@@ -315,13 +334,13 @@ public:
         }
     }
     static bool sendMessage(const std::string &message) {
-        int accessTrigger = 1;
-        int sendMessageSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-        setsockopt(sendMessageSocket, SOL_SOCKET, SO_REUSEADDR, &accessTrigger, sizeof(accessTrigger));
-        setsockopt(sendMessageSocket, SOL_SOCKET, TCP_NODELAY, &accessTrigger, sizeof(accessTrigger));
-
         int successfulSents = 0;
         for(int i=0; i < alivePeers[0].size(); i++){
+            int accessTrigger = 1;
+            int sendMessageSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+            setsockopt(sendMessageSocket, SOL_SOCKET, SO_REUSEADDR, &accessTrigger, sizeof(accessTrigger));
+            setsockopt(sendMessageSocket, SOL_SOCKET, TCP_NODELAY, &accessTrigger, sizeof(accessTrigger));
+
             station sendStation;
             sendStation.sin_addr.s_addr = inet_addr(alivePeers[0][i].c_str());
             sendStation.sin_family = AF_INET;
@@ -334,9 +353,9 @@ public:
                 int b = connect(sendMessageSocket, (stationBase*) &sendStation, sizeof(station));
                 if (b < 0) {
                     g_print("Binding exception, host bind error: %s\n", alivePeers[0][i].c_str());
+                    g_print("%d", errno);
                     throw *(new bindException);
                 }
-
                 ssize_t a = send(sendMessageSocket, message.c_str(), message.length(), 0);
                 if (a == -1)
                     throw *(new sendException);
@@ -357,7 +376,7 @@ public:
             }
             close(sendMessageSocket);
         }
-        if(successfulSents > 0){    // At least one computer must receive the block.
+        if(successfulSents > 1){    // At least one computer must receive the block.
             outmessages.push(message);
             if(blockChain.size() > 0){
                 Block *myBlock = new Block(myIP, activeIP, message);
