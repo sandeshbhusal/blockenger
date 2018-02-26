@@ -74,6 +74,10 @@ public:
             messageListener = new std::thread(listenMessage);
             g_print("NETWORK SETUP COMPLETED.\n");
             g_print("---------\n");
+            genesisBlock GENESIS;
+            blockChain.push_back(GENESIS);
+            alivePeers[0].push_back("127.0.0.3");
+            alivePeers[1].push_back("Third Person");
         }
     }
     static char *getChars(const std::string &input) {
@@ -278,8 +282,9 @@ public:
                     if(!flag){
                         g_print("This IP is new. I will store its packet size for future reference. as %d\n", thisPacketSize);
                         packetSizeStore.push_back(newPacketSize);
-                        if(newPacketSize.size > blockChain.size())
-                            updateBlockChain();
+                        if(blockChain.size() >= newPacketSize.size){
+                            // Sync the blockchain here.
+                        }
                     }
                 }
             }
@@ -358,31 +363,44 @@ public:
                         std::string myStr = buffer;
                         g_print("\nBuffer sent : %d characters as %s\n", strlen(buffer), myStr.c_str());
                         if (strlen(buffer) > 0) {
-                            // Check for the validity of the block after extracting data.
-                            Block checkBlock(buffer);
-                            if(checkBlock.validate()){
-                                g_print("This block seems untampered. Passing this along...\n");
-                                g_print("Checking for hash mismatch...\n");
-                                Block mostRecent = blockChain.at(blockChain.size() -1);
-                                if(checkBlock._prevHash == mostRecent._currentHash){
-                                    blockChain.push_back(checkBlock);
-                                    g_print("COOL! A NEW BLOCK!!");
-                                    std::string data = checkBlock._data;
-                                    for(int i=0; i<data.size(); i++){
-                                        if(data.at(i) == '~')
-                                            data.at(i) = ' ';
-                                    }
-                                    inMessages.push(data);
-                                }
-                                else{
-                                    g_print("Who keeps tampering with my blocks??\n");
+                            // Check if the request is for the total blockchain?
+                            if(myStr == "BLOCKCHAINREQUEST"){
+                                g_print("Someone is asking for a copy of the blockchain. We are going to send one.\n");
+                                for(int i=0; i<blockChain.size(); i++){
+
                                 }
                             }
-                            else{
-                                g_print("Who tampered with this block???\n");
-                                g_print("SENDER: %s\n", checkBlock._sender.c_str());
-                                g_print("RECEIVER: %s\n", checkBlock._receiver.c_str());
-                                g_print("DATA: %s\n", checkBlock._data.c_str());
+                            else {
+                                Block checkBlock(buffer);
+                                if (checkBlock.validate()) {
+                                    g_print("This block seems untampered. Passing this along...\n");
+                                    g_print("Checking for hash mismatch...\n");
+                                    if (blockChain.size() > 0) {
+                                        Block mostRecent = blockChain.at(blockChain.size() - 1);
+                                        if (checkBlock._prevHash == mostRecent.calculateHash()) {
+                                            blockChain.push_back(checkBlock);
+                                            g_print("COOL! A NEW BLOCK!!");
+                                            std::string data = checkBlock._data;
+                                            for (int i = 0; i < data.size(); i++) {
+                                                if (data.at(i) == '~')
+                                                    data.at(i) = ' ';
+                                            }
+                                            if(activeIP == checkBlock._receiver)
+                                                inMessages.push(data);
+                                        } else {
+                                            g_print("Who keeps tampering with my blocks??\n");
+                                            g_print("Got Hash: %s\n",checkBlock._prevHash.c_str());
+                                            g_print("Expected: %s\n",mostRecent.calculateHash().c_str());
+                                        }
+                                    }
+                                } else {
+                                    g_print("Who tampered with this block???\n");
+                                    g_print("SENDER: %s\n", checkBlock._sender.c_str());
+                                    g_print("RECEIVER: %s\n", checkBlock._receiver.c_str());
+                                    g_print("DATA: %s\n", checkBlock._data.c_str());
+                                    g_print("Current hash: %s\n", checkBlock._currentHash.c_str());
+                                    g_print("Calculated hash: %s\n", checkBlock.calculateHash().c_str());
+                                }
                             }
                         }
                     }
@@ -397,19 +415,10 @@ public:
         std::string encMessage = encryptMessage(message, myIP, activeIP);
         if(blockChain.size() > 0){
             int blockChainIndex = blockChain.size();
-            myBlock = new Block(myIP, activeIP, message, to_string(time(0)),blockChain.at(blockChainIndex-1)._currentHash);
-            blockChain.push_back(*myBlock);
-            g_print("Now I will add a new block\n");
+            myBlock = new Block(myIP, activeIP, message, to_string(time(0)), blockChain[blockChainIndex-1].calculateHash());
+//            blockChain.push_back(*myBlock);
+            g_print("Now I will create a new block\n");
             g_print("%s\n", myBlock->getStringFormToSend().c_str());
-        }
-        else{
-            genesisBlock GenesisBlock;
-            blockChain.push_back(GenesisBlock);
-            g_print("There was no genesis block, so I had to add one.\n");
-
-            myBlock = new Block(myIP, activeIP, message, to_string(time(0)),  GenesisBlock._currentHash);
-            blockChain.push_back(*myBlock);
-            g_print("Now I will add a new block after adding the genesis block.\n");
         }
 
         for(int i=0; i < alivePeers[0].size(); i++){
@@ -433,7 +442,7 @@ public:
                     g_print("%d", errno);
                     throw *(new bindException);
                 }
-                g_print("\n\n%s\n\n", myBlock->getStringFormToSend().c_str());
+//                g_print("\n\n%s\n\n", myBlock->getStringFormToSend().c_str());
                 char *message = new char[myBlock->getStringFormToSend().length()];
                 strcpy(message, myBlock->getStringFormToSend().c_str());
                 message[myBlock->getStringFormToSend().length()] = '\0';
@@ -510,10 +519,16 @@ public:
                 peer    = packetSizeStore.at(i).ipAddress;
             }
         }
-        return (peer);
+        if(longest > 1)
+            return (peer);
+        else
+            return "";
     }
-    static void updateBlockChain(){
-        g_print("Someone has a more recent copy of the blockchain than me!");
+    static void updateBlockChain(std::string peerName){
+        g_print("Someone has a more recent copy of the blockchain than me!\n");
+        g_print("I will ask %s for the remaining blockchain..\n", peerName.c_str());
+        // UDP Update == 'u' request to pull correct blockchain.
+
     }
 };
 

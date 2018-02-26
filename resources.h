@@ -10,8 +10,7 @@ std::queue<std::string> inMessages;
 std::queue<std::string> outmessages;
 
 std::vector<std::string> alivePeers[2];
-
-std::string activeIP = "127.0.0.2";
+std::string activeIP = "127.0.0.1";
 std::string myIP = "";
 std::string myUserName = "";
 

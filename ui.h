@@ -14,6 +14,20 @@
 std::mutex mu;
 static void buttonClicked(Gtk::Button *mybutton){
     std::string myName = mybutton->get_name();
+    if(activeIP != myName){
+        Gtk::ListBox *clearBox = messageViewer;
+        std::vector<Gtk::Widget* > rows= clearBox->get_children();
+        for(int i=0; i<rows.size(); i++)
+            clearBox->remove(*rows.at(i));
+        //Now scan the blockchain for occurence of the given IP and do stuff :D
+        for(int i=0; i<blockChain.size(); i++){
+            Block thisBlock = blockChain.at(i);
+            if(thisBlock._receiver == myName)
+                inMessages.push(thisBlock._data);
+            if(thisBlock._sender == myName)
+                outmessages.push(thisBlock._data);
+        }
+    }
     g_print("Active IP set to : %s \n", myName.c_str());
     activeIP = myName;
 }

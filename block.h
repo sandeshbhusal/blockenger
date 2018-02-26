@@ -84,9 +84,8 @@ public:
         _data = "And then god said, let there be light";
         _prevHash = "0000000000000000000000000000000000000000000000000000000000000000";
         _timestamp = "0";
-        _currentHash = Block::calculateHash(
-                (_sender + " " + _receiver + " " + _data + " " + _timestamp + " " + _prevHash));
-        g_print("Created genesis block.");
+        _currentHash = "e325a0dea8867506b9d5ff2c2a9b291884b9b82af58834d96c6cf3a14cbf6cef";
+        g_print("Created genesis block.\n");
     }
 };
 std::vector<Block> blockChain;
