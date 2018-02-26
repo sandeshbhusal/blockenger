@@ -362,7 +362,21 @@ public:
                             Block checkBlock(buffer);
                             if(checkBlock.validate()){
                                 g_print("This block seems untampered. Passing this along...\n");
-                                inMessages.push(std::string(buffer));
+                                g_print("Checking for hash mismatch...\n");
+                                Block mostRecent = blockChain.at(blockChain.size() -1);
+                                if(checkBlock._prevHash == mostRecent._currentHash){
+                                    blockChain.push_back(checkBlock);
+                                    g_print("COOL! A NEW BLOCK!!");
+                                    std::string data = checkBlock._data;
+                                    for(int i=0; i<data.size(); i++){
+                                        if(data.at(i) == '~')
+                                            data.at(i) = ' ';
+                                    }
+                                    inMessages.push(data);
+                                }
+                                else{
+                                    g_print("Who keeps tampering with my blocks??\n");
+                                }
                             }
                             else{
                                 g_print("Who tampered with this block???\n");
@@ -389,12 +403,11 @@ public:
             g_print("%s\n", myBlock->getStringFormToSend().c_str());
         }
         else{
-            Block *genGenesis;
-            Block genesisBlock = genGenesis->createGenesisBlock();
-            blockChain.push_back(genesisBlock);
+            genesisBlock GenesisBlock;
+            blockChain.push_back(GenesisBlock);
             g_print("There was no genesis block, so I had to add one.\n");
 
-            myBlock = new Block(myIP, activeIP, message, to_string(time(0)),  genesisBlock._currentHash);
+            myBlock = new Block(myIP, activeIP, message, to_string(time(0)),  GenesisBlock._currentHash);
             blockChain.push_back(*myBlock);
             g_print("Now I will add a new block after adding the genesis block.\n");
         }
@@ -445,7 +458,12 @@ public:
             close(sendMessageSocket);
         }
         if(successfulSents > 1){    // At least one computer must receive the block.
-            outmessages.push(myBlock->getStringFormToSend());
+            std::string data = myBlock->_data;
+            for(int i=0; i<data.size(); i++){
+                if(data.at(i) == '~')
+                    data.at(i) = ' ';
+            }
+            outmessages.push(myBlock->_data);
             return true;
         }
         return false;

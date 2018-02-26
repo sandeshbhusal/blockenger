@@ -29,7 +29,7 @@ public:
         _receiver = receiver;
         for(int i=0; i<data.length(); i++)
             if(data.at(i) == ' ')
-                data.at(i) = '*';
+                data.at(i) = '~';
         _data = data;
         _prevHash = prevHash;
         _timestamp = timestamp;
@@ -86,6 +86,7 @@ public:
         _timestamp = "0";
         _currentHash = Block::calculateHash(
                 (_sender + " " + _receiver + " " + _data + " " + _timestamp + " " + _prevHash));
+        g_print("Created genesis block.");
     }
 };
 std::vector<Block> blockChain;
