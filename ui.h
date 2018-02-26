@@ -141,7 +141,7 @@ void addReceivedMessage(Gtk::ListBox *listBox, std::string message){
 
     Gdk::RGBA *myColor;
     myColor = new Gdk::RGBA;
-    myColor->set_rgba(0.62, 0.7, 0.73, 1);
+    myColor->set_rgba(0.22, 0.7, 0.73, 1);
     myLabel->override_background_color(*myColor);
 
     myColor->set_rgba(1, 1, 1, 1);

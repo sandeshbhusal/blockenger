@@ -9,8 +9,10 @@
 #include <iostream>
 #include <sstream>
 #include <iterator>
+#include <regex>
 #include "sha256.h"
 #include "resources.h"
+#include "time.h"
 
 using namespace std;
 
@@ -20,12 +22,15 @@ using namespace std;
 class Block{
 private:
 public:
-    std::string _sender, _receiver, _data, _prevHash, _currentHash;
-    Block(std::string sender, std::string receiver, std::string data, std::string prevHash){
+    std::string _sender, _receiver, _data, _timestamp, _prevHash, _currentHash;
+    Block(){};
+    Block(std::string sender, std::string receiver, std::string data, std::string timestamp, std::string prevHash){
         _sender = sender;
         _receiver = receiver;
+        regex_replace(data, regex(" "), "%*");
         _data = data;
         _prevHash = prevHash;
+        _timestamp = timestamp;
         _currentHash = calculateHash();
     }
     Block(std::string dataToParse){
@@ -42,8 +47,12 @@ public:
     std::string calculateHash(){
         return picosha2::hash256_hex_string(getStringFormToCalculate());
     }
+    std::string calculateHash(std::string inputString){
+        return picosha2::hash256_hex_string(inputString);
+    }
     std::string getStringFormToCalculate(){
-        return (_sender+" "+_receiver+" "+_data+" " + _prevHash);
+        std::string toReturn =(_sender+" "+_receiver+" "+_data+ " "+ _timestamp+" " + _prevHash);
+        return toReturn;
     }
     std::string getStringFormToSend(){
         return getStringFormToCalculate() + " " + _currentHash;
@@ -57,13 +66,25 @@ public:
         }
     }
     static Block createGenesisBlock(){
-        return *(new Block("0.0.0.0", "0.0.0.0", "And then god said, let there be light", "0000000000000000000000000000000000000000000000000000000000000000"));
+        return *(new Block("0.0.0.0", "0.0.0.0", "And then god said, let there be light", to_string(time(0)),"0000000000000000000000000000000000000000000000000000000000000000"));
     }
     ~Block(){
 
     }
 };
-
+class genesisBlock : public Block {
+public:
+    std::string _sender, _receiver, _data, _timestamp, _prevHash, _currentHash;
+    genesisBlock() {
+        _sender = "0.0.0.0";
+        _receiver = "0.0.0.0";
+        _data = "And then god said, let there be light";
+        _prevHash = "0000000000000000000000000000000000000000000000000000000000000000";
+        _timestamp = "0";
+        _currentHash = Block::calculateHash(
+                (_sender + " " + _receiver + " " + _data + " " + _timestamp + " " + _prevHash));
+    }
+};
 std::vector<Block> blockChain;
 
 

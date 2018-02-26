@@ -74,7 +74,6 @@ public:
             messageListener = new std::thread(listenMessage);
             g_print("NETWORK SETUP COMPLETED.\n");
             g_print("---------\n");
-            updateBlockChain();
         }
     }
     static char *getChars(const std::string &input) {
@@ -279,6 +278,8 @@ public:
                     if(!flag){
                         g_print("This IP is new. I will store its packet size for future reference. as %d\n", thisPacketSize);
                         packetSizeStore.push_back(newPacketSize);
+                        if(newPacketSize.size > blockChain.size())
+                            updateBlockChain();
                     }
                 }
             }
@@ -357,8 +358,18 @@ public:
                         std::string myStr = buffer;
                         g_print("\nBuffer sent : %d characters as %s\n", strlen(buffer), myStr.c_str());
                         if (strlen(buffer) > 0) {
-                            inMessages.push(std::string(buffer));
-//                            g_print("Pushed message to queue\n");
+                            // Check for the validity of the block after extracting data.
+                            Block checkBlock(buffer);
+                            if(checkBlock.validate()){
+                                g_print("This block seems untampered. Passing this along...\n");
+                                inMessages.push(std::string(buffer));
+                            }
+                            else{
+                                g_print("Who tampered with this block???\n");
+                                g_print("SENDER: %s\n", checkBlock._sender.c_str());
+                                g_print("RECEIVER: %s\n", checkBlock._receiver.c_str());
+                                g_print("DATA: %s\n", checkBlock._data.c_str());
+                            }
                         }
                     }
                 }
@@ -372,7 +383,7 @@ public:
         std::string encMessage = encryptMessage(message, myIP, activeIP);
         if(blockChain.size() > 0){
             int blockChainIndex = blockChain.size();
-            myBlock = new Block(myIP, activeIP, message, blockChain.at(blockChainIndex-1)._currentHash);
+            myBlock = new Block(myIP, activeIP, message, to_string(time(0)),blockChain.at(blockChainIndex-1)._currentHash);
             blockChain.push_back(*myBlock);
             g_print("Now I will add a new block\n");
             g_print("%s\n", myBlock->getStringFormToSend().c_str());
@@ -383,7 +394,7 @@ public:
             blockChain.push_back(genesisBlock);
             g_print("There was no genesis block, so I had to add one.\n");
 
-            myBlock = new Block(myIP, activeIP, message, genesisBlock._currentHash);
+            myBlock = new Block(myIP, activeIP, message, to_string(time(0)),  genesisBlock._currentHash);
             blockChain.push_back(*myBlock);
             g_print("Now I will add a new block after adding the genesis block.\n");
         }
@@ -484,13 +495,7 @@ public:
         return (peer);
     }
     static void updateBlockChain(){
-        if(packetSizeStore.size() > 0){
-            g_print("Arrived late. The party has already begun.\n");
-            g_print("Longest packet currently held by : %s\n", getLongestPeer().c_str());
-        }
-        else{
-            g_print("And then the lord said, 'Let there be light' \n");
-        }
+        g_print("Someone has a more recent copy of the blockchain than me!");
     }
 };
 
