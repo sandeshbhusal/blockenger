@@ -15,7 +15,7 @@ void sendMessage(){
 }
 void quitApplication(){
     messageMutex.unlock();
-    std::string handshake = "d|me";
+    std::string handshake = "d|"+myUserName;
     mynet->broadcastAvailability(false, handshake);
     g_print("Exiting the application...");
     exit(0);
@@ -27,6 +27,7 @@ void connectNetwork(Glib::RefPtr<Gtk::Application> &app){
     if(strlen(x) <= 3)
         errorMessage("Error! The username must exceed three characters!");
     else{
+        myUserName = myName->get_text();
         mynet = new Network(); // Setup the network.
         if(myIP.length() == 0){
             errorMessage("Exiting the application");

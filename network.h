@@ -62,8 +62,9 @@ public:
             setsockopt(tcpTransferSocket, SOL_SOCKET, SO_REUSEADDR, &accessTrigger, sizeof(accessTrigger));
             setsockopt(tcpTransferSocket, SOL_SOCKET, SO_REUSEPORT, &accessTrigger, sizeof(accessTrigger));
             setsockopt(tcpTransferSocket, SOL_SOCKET, TCP_NODELAY, &accessTrigger, sizeof(accessTrigger));
-            std::string handshake = "c|me";
+            std::string handshake = "c|"+myUserName;
             broadcastAvailability(true, handshake);
+            sendPacketRequest();
             bindBroadcastPort();
             bindMessagePort();
             memset(&clients, 0, sizeof(clients));
@@ -226,7 +227,7 @@ public:
                     }
                 }
                 else if(buffer[0] == 'p'){
-
+                    g_print("Packet request received.\n");
                 }
             }
         }
@@ -377,6 +378,39 @@ public:
             }
         }
         return false;
+    }
+    static void sendPacketRequest(){
+        g_print("SENDING PACKET SIZE QUERY REQUEST.");
+        int accessTrigger = 1;
+        int udpListenSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+        setsockopt(udpListenSocket, SOL_SOCKET, SO_BROADCAST, &accessTrigger, sizeof(accessTrigger));
+        setsockopt(udpListenSocket, SOL_SOCKET, SO_REUSEADDR, &accessTrigger, sizeof(accessTrigger));
+        setsockopt(udpListenSocket, SOL_SOCKET, SO_REUSEPORT, &accessTrigger, sizeof(accessTrigger));
+
+        station motherShip;
+        memset(&motherShip, 0, sizeof(motherShip));
+
+        motherShip.sin_port = htons(udpListenPort);
+        motherShip.sin_family = AF_INET;
+        motherShip.sin_addr.s_addr = inet_addr("255.255.255.255");
+
+        int pings = 20;
+        while (pings--) {
+            if (sendto(udpListenSocket, "p|bhusal", strlen("p|bhusal"), 0,
+                       (stationBase *) &motherShip, sizeof(station)) == -1) {
+                std::cout << "Could not broadcast address. Retrying for another " << pings << " attempts"
+                          << std::endl;
+                std::cout << errno;
+            } else {
+                g_print("\rSuccessfully broadcast connection request #%d ", pings);
+                if(pings == 3){
+                    g_print("\n");
+                    return;
+                }
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        }
+        std::cout << "Failed to broadcast. Are you connected?" << std::endl;
     }
 };
 
