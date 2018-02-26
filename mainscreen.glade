@@ -93,11 +93,10 @@
                       <object class="GtkImage" id="image1">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="margin_top">30</property>
                         <property name="hexpand">True</property>
                         <property name="yalign">0.52999997138977051</property>
                         <property name="ypad">29</property>
-                        <property name="pixbuf">security.png</property>
+                        <property name="pixbuf">security1.png</property>
                         <property name="pixel_size">100</property>
                       </object>
                       <packing>
@@ -157,10 +156,7 @@
                         <property name="height_request">36</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <property name="has_focus">True</property>
-                        <property name="is_focus">True</property>
                         <property name="can_default">True</property>
-                        <property name="has_default">True</property>
                         <property name="tooltip_markup" translatable="yes">Username cannot contain spaces or special characters.</property>
                         <property name="halign">center</property>
                         <property name="valign">center</property>
@@ -275,7 +271,7 @@
         <child>
           <object class="GtkImage" id="image9">
             <property name="width_request">359</property>
-            <property name="height_request">98</property>
+            <property name="height_request">137</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="halign">center</property>

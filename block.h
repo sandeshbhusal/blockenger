@@ -33,7 +33,6 @@ public:
     };
 
     Block(std::string sender, std::string receiver, std::string data) {
-        g_print("Pushed a new block !!\n");
         _sender = sender;
         _receiver = receiver;
         _data = data;
@@ -67,6 +66,10 @@ public:
 
     ~Block(){
 
+    }
+
+    static Block generateGenesis(){
+        return *(new Block("0.0.0.0", "0.0.0.0", "And god said, let there be light XD"));
     }
 };
 

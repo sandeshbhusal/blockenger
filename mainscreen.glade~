@@ -2,58 +2,6 @@
 <!-- Generated with glade 3.18.3 -->
 <interface>
   <requires lib="gtk+" version="3.12"/>
-  <object class="GtkWindow" id="chatrow">
-    <property name="width_request">350</property>
-    <property name="can_focus">False</property>
-    <child>
-      <object class="GtkFixed" id="fixed3">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <child>
-          <object class="GtkButton" id="button1">
-            <property name="width_request">350</property>
-            <property name="height_request">77</property>
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-            <child>
-              <object class="GtkFixed" id="fixed4">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <child>
-                  <object class="GtkImage" id="image10">
-                    <property name="width_request">64</property>
-                    <property name="height_request">64</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="pixel_size">50</property>
-                    <property name="icon_name">preferences-desktop-personal</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="label3">
-                    <property name="width_request">218</property>
-                    <property name="height_request">64</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="margin_left">10</property>
-                    <property name="label" translatable="yes">Sandesh Bhusal</property>
-                    <property name="xalign">0</property>
-                    <attributes>
-                      <attribute name="font-desc" value="Umpush Light 13"/>
-                    </attributes>
-                  </object>
-                  <packing>
-                    <property name="x">62</property>
-                  </packing>
-                </child>
-              </object>
-            </child>
-          </object>
-        </child>
-      </object>
-    </child>
-  </object>
   <object class="GtkWindow" id="loginWindow">
     <property name="name">loginWindow</property>
     <property name="can_focus">False</property>
@@ -145,11 +93,10 @@
                       <object class="GtkImage" id="image1">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="margin_top">30</property>
                         <property name="hexpand">True</property>
                         <property name="yalign">0.52999997138977051</property>
                         <property name="ypad">29</property>
-                        <property name="pixbuf">security.png</property>
+                        <property name="pixbuf">security1.png</property>
                         <property name="pixel_size">100</property>
                       </object>
                       <packing>
@@ -327,7 +274,7 @@
         <child>
           <object class="GtkImage" id="image9">
             <property name="width_request">359</property>
-            <property name="height_request">98</property>
+            <property name="height_request">137</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="halign">center</property>
@@ -339,35 +286,6 @@
           <packing>
             <property name="y">476</property>
           </packing>
-        </child>
-      </object>
-    </child>
-  </object>
-  <object class="GtkApplicationWindow" id="mainWindow">
-    <property name="width_request">359</property>
-    <property name="can_focus">False</property>
-    <property name="show_menubar">False</property>
-    <child>
-      <object class="GtkFixed" id="fixed5">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <child>
-          <object class="GtkBox" id="chatRowContainer">
-            <property name="width_request">363</property>
-            <property name="height_request">250</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="orientation">vertical</property>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-          </object>
         </child>
       </object>
     </child>

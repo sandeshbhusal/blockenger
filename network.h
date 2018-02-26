@@ -30,26 +30,12 @@ std::mutex messageMutex;
 
 const int udpListenPort = 8888;
 const int tcpTransferPort = 7777;
+
 sockaddr_in inputStation;
 int udpListenSocket;
 int tcpTransferSocket;
 
 bool firstRun = true;
-void errorMessage(std::string err) {
-    GtkWidget *dialog = gtk_message_dialog_new(NULL,
-                                               GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK_CANCEL, err.c_str());
-    gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(GTK_WIDGET(dialog));
-}
-
-
-void infoMessage(std::string err) {
-    GtkWidget *dialog = gtk_message_dialog_new(NULL,
-                                               GTK_DIALOG_MODAL, GTK_MESSAGE_INFO, GTK_BUTTONS_OK_CANCEL, err.c_str());
-    gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(GTK_WIDGET(dialog));
-}
-
 std::thread *broadcastListener;
 std::thread *messageListener;
 std::thread *updateMessageBoardThread;
@@ -79,20 +65,19 @@ public:
             std::string handshake = "c|me";
             broadcastAvailability(true, handshake);
             bindBroadcastPort();
-            broadcastListener = new std::thread(listenPeerBroadcast);
             bindMessagePort();
-            messageListener = new std::thread(listenMessage);
             memset(&clients, 0, sizeof(clients));
             myIP = getOwnIP();
+            broadcastListener = new std::thread(listenPeerBroadcast);
+            messageListener = new std::thread(listenMessage);
+            g_print("NETWORK SETUP COMPLETED.\n");
         }
     }
-
     static char *getChars(const std::string &input) {
         auto retVal = new char[input.length()];
         strcpy(retVal, input.c_str());
         return retVal;
     }
-
     static void broadcastAvailability(bool available, std::string &handshake) {
         messageMutex.lock();
         if (available) {
@@ -119,8 +104,11 @@ public:
                               << std::endl;
                     std::cout << errno;
                 } else {
-                    std::cout << "Successfully broadcast connection request!" << std::endl;
-                    if(pings == 3) return;
+                    g_print("\rSuccessfully broadcast connection request #%d ", pings);
+                    if(pings == 3){
+                        g_print("\n");
+                        return;
+                    }
                 }
                 std::this_thread::sleep_for(std::chrono::milliseconds(50));
             }
@@ -157,7 +145,6 @@ public:
         }
         messageMutex.unlock();
     }
-
     static bool bindBroadcastPort() {
         udpListenSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
         station me;
@@ -171,11 +158,10 @@ public:
             g_print("%d", errno);
             return false;
         } else {
-            std::cout << "Successfully bound to UDP port for broadcasts. " << std::endl;
+            std::cout << "BINDING BROADCAST PORT... DONE" << std::endl;
             return true;
         }
     }
-
     static bool bindMessagePort() {
         inputStation.sin_family = AF_INET;
         inputStation.sin_addr.s_addr = INADDR_ANY;
@@ -191,6 +177,7 @@ public:
             int x = listen(tcpTransferSocket, 3);
             if (x < 0)
                 throw new listenException;
+            g_print("BINDING MESSAGE PORT... DONE\n");
         }
         catch (bindException e) {
             g_print("Could not bind to 192.168.1.1");
@@ -202,7 +189,6 @@ public:
         }
         return true;
     }
-
     static void listenPeerBroadcast() {
         while (true) {
             station incoming;
@@ -212,11 +198,11 @@ public:
             unsigned int len = sizeof(station);
             g_print("\nListening who is getting connected\n");
             auto readBytes = recvfrom(udpListenSocket, buffer, 1024, 0, (stationBase *) &incoming, &len);
-            g_print("Read %d bytes \n", readBytes);
+//            g_print("Read %d bytes \n", readBytes);
             if (strlen(buffer) > 0) {
-                g_print("got some data as: %s in UDP \n", buffer);
+//                g_print("got some data as: %s in UDP \n", buffer);
                 if (buffer[0] == 'c') {
-                    g_print("Connected.\n");
+//                    g_print("Connected.\n");
                     incomingIP = inet_ntoa(incoming.sin_addr);
                     std::string name = std::string(buffer);
                     incomingName = name.substr(2, name.size()-1);
@@ -228,7 +214,7 @@ public:
                     } else {
                         g_print("Received broadcast but user already in user list.\n");
                     }
-                } else {
+                } else if(buffer[0] == 'd'){
                     incomingIP = inet_ntoa(incoming.sin_addr);
                     g_print("Disconnected: %s ", inet_ntoa(incoming.sin_addr));
                     std::string name = std::string(buffer);
@@ -239,10 +225,12 @@ public:
                         populateActive();
                     }
                 }
+                else if(buffer[0] == 'p'){
+
+                }
             }
         }
     }
-
     static std::string getOwnIP() {
         g_print("CHECKING MY IP ADDRESS...");
         int inet = 0, inet6 = 0;
@@ -256,14 +244,16 @@ public:
                     station *sa;
                     sa = (station*) iterator->ifa_addr;
                     std::string address = inet_ntoa(sa->sin_addr);
-                    if(address != "127.0.0.1")
+                    if(address != "127.0.0.1") {
+                        g_print("DONE\n");
                         return address;
+                    }
                 }
             }
+            g_print("DONE\n");
             return "127.0.0.1";
         }
     }
-
     static void listenMessage() {
         while (true) {
             int sd;
@@ -289,13 +279,13 @@ public:
                     exit(EXIT_FAILURE);
                 }
                 std::string a(inet_ntoa(inputStation.sin_addr));
-                g_print("New connection , socket fd is %d , ip is : %s , port : %d\n", new_socket,
-                        inet_ntoa(inputStation.sin_addr), ntohs(inputStation.sin_port));
+//                g_print("New connection , socket fd is %d , ip is : %s , port : %d\n", new_socket,
+//                        inet_ntoa(inputStation.sin_addr), ntohs(inputStation.sin_port));
 
                 for (int i = 0; i < 30; i++) {
                     if (clients[i] == 0) {
                         clients[i] = new_socket;
-                        g_print("Adding to list of sockets as %d\n", i);
+//                        g_print("Adding to list of sockets as %d\n", i);
                         numConnectedClients++;
                         break;
                     }
@@ -312,10 +302,10 @@ public:
                         std::thread *addMessageThread;
                         buffer[valread] = '\0';
                         std::string myStr = buffer;
-                        g_print("\nBuffer sent : %d characters as %s\n", strlen(buffer), myStr.c_str());
+//                        g_print("\nBuffer sent : %d characters as %s\n", strlen(buffer), myStr.c_str());
                         if (strlen(buffer) > 0) {
                             inMessages.push(std::string(buffer));
-                            g_print("Pushed message to queue\n");
+//                            g_print("Pushed message to queue\n");
                         }
                     }
                 }
@@ -323,57 +313,70 @@ public:
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }
-
     static bool sendMessage(const std::string &message) {
         int accessTrigger = 1;
         int sendMessageSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
         setsockopt(sendMessageSocket, SOL_SOCKET, SO_REUSEADDR, &accessTrigger, sizeof(accessTrigger));
         setsockopt(sendMessageSocket, SOL_SOCKET, TCP_NODELAY, &accessTrigger, sizeof(accessTrigger));
 
-        station sendStation;
-        sendStation.sin_addr.s_addr = inet_addr(activeIP.c_str());
-        sendStation.sin_family = AF_INET;
-        sendStation.sin_port = htons(tcpTransferPort);
+        int successfulSents = 0;
+        for(int i=0; i < alivePeers[0].size(); i++){
+            station sendStation;
+            sendStation.sin_addr.s_addr = inet_addr(alivePeers[0][i].c_str());
+            sendStation.sin_family = AF_INET;
+            sendStation.sin_port = htons(tcpTransferPort);
+            class bindException {
+            };
+            class sendException {
+            };
+            try {
+                int b = connect(sendMessageSocket, (stationBase*) &sendStation, sizeof(station));
+                if (b < 0) {
+                    g_print("Binding exception, host bind error: %s\n", alivePeers[0][i].c_str());
+                    throw *(new bindException);
+                }
 
-        class bindException {
-        };
-        class sendException {
-        };
-        try {
-            int b = connect(sendMessageSocket, (stationBase *) &sendStation, sizeof(station));
-            if (b < 0) {
-                g_print("Binding exception\n");
-                throw *(new bindException);
+                ssize_t a = send(sendMessageSocket, message.c_str(), message.length(), 0);
+                if (a == -1)
+                    throw *(new sendException);
+                g_print("Sent to: %s \n", alivePeers[0][i].c_str());
+                successfulSents++;
             }
+            catch (bindException e) {
+                if (errno == 106)
+                    g_print("Already bound port being recalled..\n");
+            }
+            catch (sendException e) {
+                g_print("Error sending the message to the receiver...\n");
+                g_print("%d", errno);
+            }
+            catch (...) {
+                g_print("%d", errno);
+                return false;
+            }
+            close(sendMessageSocket);
         }
-        catch (bindException e) {
-            if (errno != 106)
-                g_print("Error binding to the port to send data...\n");
-        }
-        catch (...) {
-            g_print("%d", errno);
-            return false;
-        }
-        try {
-            ssize_t a = send(sendMessageSocket, message.c_str(), message.length(), 0);
-            if (a == -1)
-                throw *(new sendException);
+        if(successfulSents > 0){    // At least one computer must receive the block.
             outmessages.push(message);
-
-//            if(blockChain.size() > 0){
+            if(blockChain.size() > 0){
                 Block *myBlock = new Block(myIP, activeIP, message);
                 blockChain.push_back(*myBlock);
-                g_print(myBlock->sendData().c_str());
-//            }
-            g_print("\nCurrent Blockchain Index at:::%d\n", blockChain.size());
+                g_print("Now I will add a new block\n");
+                return true;
+            }
+            else{
+                Block *genGenesis;
+                Block genesisBlock = genGenesis->generateGenesis();
+                blockChain.push_back(genesisBlock);
+                g_print("There was no genesis block, so I had to add one.\n");
+
+                Block *myBlock = new Block(myIP, activeIP, message);
+                blockChain.push_back(*myBlock);
+                g_print("Now I will add a new block after adding the genesis block.\n");
+                return true;
+            }
         }
-        catch (sendException e) {
-            g_print("Error sending the message to the receiver...\n");
-            g_print("%d", errno);
-            return false;
-        }
-        close(sendMessageSocket);
-        return true;
+        return false;
     }
 };
 

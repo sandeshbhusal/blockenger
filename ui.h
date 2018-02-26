@@ -15,6 +15,22 @@ static void buttonClicked(Gtk::Button *mybutton){
     std::string myName = mybutton->get_name();
     activeIP = myName;
 }
+
+void errorMessage(std::string err) {
+    GtkWidget *dialog = gtk_message_dialog_new(NULL,
+                                               GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK_CANCEL, err.c_str());
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(GTK_WIDGET(dialog));
+}
+
+
+void infoMessage(std::string err) {
+    GtkWidget *dialog = gtk_message_dialog_new(NULL,
+                                               GTK_DIALOG_MODAL, GTK_MESSAGE_INFO, GTK_BUTTONS_OK_CANCEL, err.c_str());
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(GTK_WIDGET(dialog));
+}
+
 bool populateActive(){
     Gtk::ListBox *clearBox = userListBox;
     std::vector<Gtk::Widget* > rows= clearBox->get_children();
@@ -147,12 +163,12 @@ bool updateMessageBoard(){
 }
 bool updateOutMessageBoard(){
     if (outmessages.size() > 0) {
-        g_print("> Update function called for out, %d out messages in queue\n", outmessages.size());
+//        g_print("> Update function called for out, %d out messages in queue\n", outmessages.size());
         std::string getMessage = outmessages.front();
         outmessages.pop();
         if (strlen(getMessage.c_str()) > 0)
-            g_print("%s", getMessage.c_str());
             addSentMessage(messageViewer, getMessage, true);
+//            g_print("%s", getMessage.c_str());
     }
     return true;
 }
