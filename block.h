@@ -27,7 +27,9 @@ public:
     Block(std::string sender, std::string receiver, std::string data, std::string timestamp, std::string prevHash){
         _sender = sender;
         _receiver = receiver;
-        regex_replace(data, regex(" "), "%*");
+        for(int i=0; i<data.length(); i++)
+            if(data.at(i) == ' ')
+                data.at(i) = '*';
         _data = data;
         _prevHash = prevHash;
         _timestamp = timestamp;
@@ -41,8 +43,9 @@ public:
         _sender = vstrings[0];
         _receiver = vstrings[1];
         _data = vstrings[2];
-        _prevHash = vstrings[3];
-        _currentHash = vstrings[4];
+        _timestamp = vstrings[3];
+        _prevHash = vstrings[4];
+        _currentHash = vstrings[5];
     }
     std::string calculateHash(){
         return picosha2::hash256_hex_string(getStringFormToCalculate());
