@@ -238,14 +238,44 @@ public:
                         receiver.sin_family = AF_INET;
                         receiver.sin_port   = htons(udpListenPort);
                         receiver.sin_addr.s_addr  = inet_addr(incomingIP.c_str());
-                        if(sendto(udpMessenger, "c|bhusal", strlen("c|bhusal"), 0,
+                        std::string handshake = "c|"+myUserName;
+                        if(sendto(udpMessenger, handshake.c_str(), handshake.length(), 0,
                                   (stationBase *) &receiver, sizeof(station)) == -1){
-                            g_print("Could not send packet :'(\n");
+                            g_print("Could not send connection status packet :'(\n");
                             g_print("%d\n", errno);
                         }
                         else{
-                            g_print("Packet size sent successfully\n");
+                            g_print("Connection status successfully\n");
                         }
+                        handshake = "s|"+ to_string(blockChain.size());
+                        if(sendto(udpMessenger, handshake.c_str(), handshake.length(), 0,
+                                  (stationBase *) &receiver, sizeof(station)) == -1){
+                            g_print("Could not send Size packet :'(\n");
+                            g_print("%d\n", errno);
+                        }
+                        else{
+                            g_print("Size packet sent successfully\n");
+                        }
+                    }
+                }
+                else if(buffer[0] = 's'){
+                    incomingIP = inet_ntoa(incoming.sin_addr);
+                    std::string receivedBuffer = buffer;
+                    std::string interest = receivedBuffer.substr(2, receivedBuffer.size()-1);
+                    int thisPacketSize = stoi(interest);
+                    packetSize newPacketSize({incomingIP, thisPacketSize});
+                    // Check if the incoming IP is already in the packetsizestore.
+                    bool flag = false;
+                    for(int i=0; i<packetSizeStore.size(); i++){
+                        packetSize searchItem = packetSizeStore.at(i);
+                        if(searchItem.ipAddress == incomingIP){
+                            flag = true;
+                            break;
+                        }
+                    }
+                    if(!flag){
+                        g_print("This IP is new. I will store its packet size for future reference.\n");
+                        packetSizeStore.push_back(newPacketSize);
                     }
                 }
             }

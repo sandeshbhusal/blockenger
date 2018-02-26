@@ -26,6 +26,13 @@ Gtk::Entry   *myMessage;
 
 int clients[30];
 
+struct packetSize{
+    std::string ipAddress;
+    int size;
+};
+typedef struct packetSize packetSize;
+std::vector<packetSize> packetSizeStore;
+
 std::string userImages[] = {
     "elf.png",
     "santa.png",
