@@ -9,6 +9,7 @@
 #include <mutex>
 #include <set>
 #include <gtkmm/togglebutton.h>
+#include "block.h"
 
 std::mutex mu;
 static void buttonClicked(Gtk::Button *mybutton){
@@ -40,7 +41,6 @@ bool populateActive(){
     for(int i=0; i< alivePeers[0].size(); i++){
         std::string name;
         name = alivePeers[1].at(i);
-        g_print("Total friends: %d %s\n", alivePeers[0].size(), alivePeers[1][i].c_str());
         if(name.length() > 0) {
             Gtk::ListBox *listBox = userListBox;
             Gtk::ListBoxRow *myRow;

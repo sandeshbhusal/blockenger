@@ -9,6 +9,8 @@
 #include <iostream>
 #include <sstream>
 #include <iterator>
+#include "sha256.h"
+#include "resources.h"
 
 using namespace std;
 
@@ -17,59 +19,48 @@ using namespace std;
 
 class Block{
 private:
-    std::string _sender;
-    std::string _receiver;
-    std::string _data;
-    std::string _prevHash;
-    long long _index;
-
 public:
-    long long _size;
-    std::string _genesisHash;
-    std::string _currentHash;
-
-    Block(std::string data){
-        popData(data);
-    };
-
-    Block(std::string sender, std::string receiver, std::string data) {
+    std::string _sender, _receiver, _data, _prevHash, _currentHash;
+    Block(std::string sender, std::string receiver, std::string data, std::string prevHash){
         _sender = sender;
         _receiver = receiver;
         _data = data;
-        _prevHash = "asdasd";
+        _prevHash = prevHash;
+        _currentHash = calculateHash();
     }
-
-    bool verify() { // Kaam chaldai xa
-
-    };
-
-    std::string getData(std::string privateKey) { // Message herna use garne
-        return _data;
-    }
-
-    std::string sendData() { // network maa string send garna use garne.
-        return _genesisHash + " " + _currentHash + " " + _sender + " " + _receiver + " " + _prevHash + " " + _data;
-    }
-
-    void popData(string dat) {  // network bata aako string lai parse garne
-        std::stringstream ss(dat);
+    Block(std::string dataToParse){
+        std::stringstream ss(dataToParse);
         std::istream_iterator<std::string> begin(ss);
         std::istream_iterator<std::string> end;
         std::vector<std::string> vstrings(begin, end);
-        _genesisHash = vstrings[0];
-        _currentHash = vstrings[1];
-        _sender = vstrings[2];
-        _receiver = vstrings[3];
-        _prevHash = vstrings[4];
-        _data = vstrings[5];
+        _sender = vstrings[0];
+        _receiver = vstrings[1];
+        _data = vstrings[2];
+        _prevHash = vstrings[3];
+        _currentHash = vstrings[4];
     }
-
+    std::string calculateHash(){
+        return picosha2::hash256_hex_string(getStringFormToCalculate());
+    }
+    std::string getStringFormToCalculate(){
+        return _sender+" "+_receiver+" "+_data+" " + _prevHash;
+    }
+    std::string getStringFormToSend(){
+        return getStringFormToCalculate() + " " + _currentHash;
+    }
+    bool validate(){
+        return (picosha2::hash256_hex_string(getStringFormToCalculate()) == _currentHash);
+    }
+    std::string getData(){
+        if(_receiver == myIP){
+            return decryptMessage(_data, _receiver, _sender);
+        }
+    }
+    static Block createGenesisBlock(){
+        return *(new Block("0.0.0.0", "0.0.0.0", "And then god said, let there be light", "0000000000000000000000000000000000000000000000000000000000000000"));
+    }
     ~Block(){
 
-    }
-
-    static Block generateGenesis(){
-        return *(new Block("0.0.0.0", "0.0.0.0", "And god said, let there be light XD"));
     }
 };
 

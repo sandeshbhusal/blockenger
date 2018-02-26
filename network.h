@@ -25,6 +25,7 @@
 #include <netdb.h>
 #include <mutex>
 #include <netinet/tcp.h>
+#include "block.h"
 
 std::mutex messageMutex;
 
@@ -72,6 +73,8 @@ public:
             myIP = getOwnIP();
             messageListener = new std::thread(listenMessage);
             g_print("NETWORK SETUP COMPLETED.\n");
+            g_print("---------\n");
+            updateBlockChain();
         }
     }
     static char *getChars(const std::string &input) {
@@ -211,7 +214,7 @@ public:
                         alivePeers[0].push_back(std::string(incomingIP));
                         alivePeers[1].push_back(incomingName);
                         g_print("New user connected! as %s\n", incomingName.c_str());
-                        populateActive();
+//                        populateActive();
                     } else {
                         g_print("Received broadcast but user already in user list.\n");
                     }
@@ -223,7 +226,7 @@ public:
                     if(int pos = (std::find(alivePeers[0].begin(), alivePeers[0].end(), incomingIP)) != alivePeers[0].end()){
                         alivePeers[0].erase(alivePeers[0].begin()+pos);
                         alivePeers[1].erase(alivePeers[1].begin()+pos);
-                        populateActive();
+//                        populateActive();
                     }
                 }
                 else if(buffer[0] == 'p'){
@@ -274,7 +277,7 @@ public:
                         }
                     }
                     if(!flag){
-                        g_print("This IP is new. I will store its packet size for future reference.\n");
+                        g_print("This IP is new. I will store its packet size for future reference. as %d\n", thisPacketSize);
                         packetSizeStore.push_back(newPacketSize);
                     }
                 }
@@ -409,18 +412,19 @@ public:
         if(successfulSents > 1){    // At least one computer must receive the block.
             outmessages.push(message);
             if(blockChain.size() > 0){
-                Block *myBlock = new Block(myIP, activeIP, message);
+                int blockChainIndex = blockChain.size();
+                Block *myBlock = new Block(myIP, activeIP, message, blockChain.at(blockChainIndex-1)._currentHash);
                 blockChain.push_back(*myBlock);
                 g_print("Now I will add a new block\n");
                 return true;
             }
             else{
                 Block *genGenesis;
-                Block genesisBlock = genGenesis->generateGenesis();
+                Block genesisBlock = genGenesis->createGenesisBlock();
                 blockChain.push_back(genesisBlock);
                 g_print("There was no genesis block, so I had to add one.\n");
 
-                Block *myBlock = new Block(myIP, activeIP, message);
+                Block *myBlock = new Block(myIP, activeIP, message, genesisBlock.calculateHash());
                 blockChain.push_back(*myBlock);
                 g_print("Now I will add a new block after adding the genesis block.\n");
                 return true;
@@ -460,6 +464,26 @@ public:
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
         }
         std::cout << "Failed to broadcast. Are you connected?" << std::endl;
+    }
+    static std::string getLongestPeer(){
+        int longest = -1;
+        std::string peer;
+        for(int i=0; i<packetSizeStore.size(); i++){
+            if(packetSizeStore.at(i).size > longest){
+                longest = packetSizeStore.at(i).size;
+                peer    = packetSizeStore.at(i).ipAddress;
+            }
+        }
+        return (peer);
+    }
+    static void updateBlockChain(){
+        if(packetSizeStore.size() > 0){
+            g_print("Arrived late. The party has already begun.\n");
+            g_print("Longest packet currently held by : %s\n", getLongestPeer().c_str());
+        }
+        else{
+            g_print("And then the lord said, 'Let there be light' \n");
+        }
     }
 };
 

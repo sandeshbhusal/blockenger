@@ -169,6 +169,9 @@
 		<Unit filename="/home/sandesh/projects/bitenger/resources.h">
 			<Option target="gtkmmproject"/>
 		</Unit>
+		<Unit filename="/home/sandesh/projects/bitenger/sha256.h">
+			<Option target="gtkmmproject"/>
+		</Unit>
 		<Unit filename="/home/sandesh/projects/bitenger/ui.h">
 			<Option target="gtkmmproject"/>
 		</Unit>

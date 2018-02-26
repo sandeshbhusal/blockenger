@@ -2,7 +2,6 @@
 #ifndef GTKMMPROJECT_RESOURCES_H
 #define GTKMMPROJECT_RESOURCES_H
 #include <iostream>
-#include "block.h"
 #include <vector>
 #include <queue>
 #include <set>
@@ -42,8 +41,8 @@ std::string userImages[] = {
     "gingerbread.png"
 };
 
-string XOR_Encryption(string toBeEncrypted, string sKey){
-    string sEncrypted(toBeEncrypted);
+std::string XOR_Encryption(std::string toBeEncrypted, std::string sKey){
+    std::string sEncrypted(toBeEncrypted);
     unsigned int iKey=sKey.length();
     int iIn=toBeEncrypted.length();
     int x=0;
@@ -54,10 +53,10 @@ string XOR_Encryption(string toBeEncrypted, string sKey){
     }
     return sEncrypted;
 }
-string encryptMessage(std::string message, std::string myIP, std::string hisIP){
+std::string encryptMessage(std::string message, std::string myIP, std::string hisIP){
 
 }
-string decryptMessage(std::string message, std::string myIP, std::string hisIP){
+std::string decryptMessage(std::string message, std::string myIP, std::string hisIP){
 
 }
 #endif

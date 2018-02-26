@@ -40,9 +40,11 @@ void connectNetwork(Glib::RefPtr<Gtk::Application> &app){
             Glib::signal_timeout().connect(my_slot, 50);
             sigc::slot<bool> new_slot = sigc::ptr_fun(&updateOutMessageBoard);
             Glib::signal_timeout().connect(new_slot, 50);
+            sigc::slot<bool> user_slot = sigc::ptr_fun(&populateActive);
+            Glib::signal_timeout().connect(user_slot, 50);
             alivePeers[0].push_back("127.0.0.1");
             alivePeers[1].push_back("Me");
-            populateActive();
+//            populateActive();
             mainWindow->show();
 //            loginWindow->hide();
         }
