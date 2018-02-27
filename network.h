@@ -373,7 +373,22 @@ public:
                             if(myStr == "BLOCKCHAINREQUEST"){
                                 g_print("Someone is asking for a copy of the blockchain. We are going to send one.\n");
                                 for(int i=0; i<blockChain.size(); i++){
-
+                                    int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+                                    station remote;
+                                    remote.sin_family = AF_INET;
+                                    remote.sin_addr.s_addr = inet_addr(inet_ntoa(inputStation.sin_addr));
+                                    remote.sin_port = htons(tcpTransferPort);
+                                    if (connect(sock , (struct sockaddr *)&remote , sizeof(remote)) < 0) {
+                                        perror("connect failed to give blocks...\n");
+                                    }
+                                    std::string sendData = blockChain.at(i).getStringFormToSend();
+                                    if(send(sock, sendData.c_str(), sendData.length(), 0) < 0){
+                                        perror("Could not send Block packet on TCP\n");
+                                    }
+                                    else{
+                                        g_print("SENT BLOCK #%d\n", i);
+                                    }
+                                    close(sock);
                                 }
                             }
                             else {
