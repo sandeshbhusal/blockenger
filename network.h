@@ -387,7 +387,7 @@ public:
                                             g_print("COOL! A NEW BLOCK!!");
                                             std::string data = checkBlock._data;
                                             data = decryptMessage(checkBlock._data, "192.168.1.1", "192.168.1.2");
-                                            if(activeIP == checkBlock._receiver)
+                                            if(activeIP == checkBlock._sender && myIP == checkBlock._receiver)
                                                 inMessages.push(data);
                                         } else if(checkBlock._currentHash != mostRecent.calculateHash()) {
                                             g_print("Who keeps tampering with my blocks??\n");
@@ -468,7 +468,7 @@ public:
             }
             close(sendMessageSocket);
         }
-        if(successfulSents > 1){    // At least one computer must receive the block.
+        if(successfulSents > 1 && activeIP == myBlock->_receiver){    // At least one computer must receive the block.
             std::string data = myBlock->_data;
             outmessages.push(decryptMessage(myBlock->_data, "192.168.1.1", "192.168.1.2"));
             return true;

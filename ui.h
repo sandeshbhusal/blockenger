@@ -23,9 +23,9 @@ static void buttonClicked(Gtk::Button *mybutton){
         for(int i=0; i<blockChain.size(); i++){
             Block thisBlock = blockChain.at(i);
             if(thisBlock._receiver == myName)
-                inMessages.push(thisBlock._data);
+                inMessages.push(decryptMessage(thisBlock._data, "192.168.1.1", "192.168.1.2"));
             if(thisBlock._sender == myName)
-                outmessages.push(thisBlock._data);
+                outmessages.push(decryptMessage(thisBlock._data, "192.168.1.1", "192.168.1.2"));
         }
     }
     g_print("Active IP set to : %s \n", myName.c_str());
