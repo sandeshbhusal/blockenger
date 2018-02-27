@@ -15,7 +15,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="62e85b3a-49ad-43be-a3f9-70ad80236021" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/network.h" afterPath="$PROJECT_DIR$/network.h" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/gtkmmproject.dir/main.cpp.o" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/gtkmmproject.dir/main.cpp.o" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/gtkmmproject" afterPath="$PROJECT_DIR$/cmake-build-debug/gtkmmproject" />
       <change beforePath="$PROJECT_DIR$/ui.h" afterPath="$PROJECT_DIR$/ui.h" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
@@ -63,7 +65,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="network.h" pinned="false" current-in-tab="true">
+      <file leaf-file-name="network.h" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/network.h">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="336">
@@ -82,11 +84,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ui.h" pinned="false" current-in-tab="false">
+      <file leaf-file-name="ui.h" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ui.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="352">
-              <caret line="24" column="45" lean-forward="false" selection-start-line="24" selection-start-column="45" selection-end-line="24" selection-end-column="45" />
+            <state relative-caret-position="400">
+              <caret line="78" column="42" lean-forward="false" selection-start-line="78" selection-start-column="42" selection-end-line="78" selection-end-column="42" />
               <folding>
                 <element signature="e#53#75#0" expanded="true" />
               </folding>
@@ -147,8 +149,8 @@
         <option value="$PROJECT_DIR$/block.h" />
         <option value="$PROJECT_DIR$/main.cpp" />
         <option value="$PROJECT_DIR$/resources.h" />
-        <option value="$PROJECT_DIR$/ui.h" />
         <option value="$PROJECT_DIR$/network.h" />
+        <option value="$PROJECT_DIR$/ui.h" />
       </list>
     </option>
   </component>
@@ -293,12 +295,12 @@
       <workItem from="1519608075050" duration="6044000" />
       <workItem from="1519614313204" duration="13026000" />
       <workItem from="1519629472579" duration="19312000" />
-      <workItem from="1519695879327" duration="3423000" />
+      <workItem from="1519695879327" duration="4129000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="200065000" />
+    <option name="totallyTimeSpent" value="200771000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="677" y="59" width="1368" height="771" extended-state="6" />
@@ -818,16 +820,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ui.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="352">
-          <caret line="24" column="45" lean-forward="false" selection-start-line="24" selection-start-column="45" selection-end-line="24" selection-end-column="45" />
-          <folding>
-            <element signature="e#53#75#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/network.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="336">
@@ -841,6 +833,16 @@
             <element signature="e#20413#20448#1" expanded="false" />
             <element signature="e#20462#20497#1" expanded="false" />
             <element signature="e#22240#23761#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ui.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="400">
+          <caret line="78" column="42" lean-forward="false" selection-start-line="78" selection-start-column="42" selection-end-line="78" selection-end-column="42" />
+          <folding>
+            <element signature="e#53#75#0" expanded="true" />
           </folding>
         </state>
       </provider>

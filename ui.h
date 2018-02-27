@@ -22,10 +22,12 @@ static void buttonClicked(Gtk::Button *mybutton){
         //Now scan the blockchain for occurence of the given IP and do stuff :D
         for(int i=0; i<blockChain.size(); i++){
             Block thisBlock = blockChain.at(i);
-            if(thisBlock._receiver == myName)
-                inMessages.push(decryptMessage(thisBlock._data, "192.168.1.1", "192.168.1.2"));
-            if(thisBlock._sender == myName)
+            if(thisBlock._sender == myName) {
                 outmessages.push(decryptMessage(thisBlock._data, "192.168.1.1", "192.168.1.2"));
+            }
+            if(thisBlock._receiver == myName) {
+                inMessages.push(decryptMessage(thisBlock._data, "192.168.1.1", "192.168.1.2"));
+            }
         }
     }
     g_print("Active IP set to : %s \n", myName.c_str());
@@ -74,6 +76,7 @@ bool populateActive(){
             std::string imagePath = "../" + userImages[x];
             avatar->set(imagePath);
             avatar->set_size_request(40, 40);
+            avatar->set_alignment(0, 0.5);
             chatRow = new Gtk::Box();
             chatRow->set_size_request(0, 40);
             chatRow->pack_start(*avatar);
