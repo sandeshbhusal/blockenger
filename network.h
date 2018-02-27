@@ -288,13 +288,10 @@ public:
                     if(!flag){
                         g_print("This IP is new. I will store its packet size for future reference. as %d\n", thisPacketSize);
                         packetSizeStore.push_back(newPacketSize);
-                        if(newPacketSize.size > blockChain.size()){
+                        if(blockChain.size() < newPacketSize.size){
                             updateBlockChain(getLongestPeer());
                         }
                     }
-                }
-                else if(buffer[0] =='u'){
-                    g_print("Update request received.\n");
                 }
             }
         }
@@ -529,9 +526,27 @@ public:
     static void updateBlockChain(std::string peerName){
         g_print("Someone has a more recent copy of the blockchain than me!\n");
         g_print("I will ask %s for the remaining blockchain..\n", peerName.c_str());
-        // UDP Update == 'u' request to pull correct blockchain.
-        std::string handshake = "u|"+myUserName;
-        sendPacketRequest(peerName, handshake);
+        // TCP Update == '' request to pull correct blockchain.
+
+        int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        if(sock == -1){
+            g_print("Could not make a socket to pull blockchain...");
+        }
+        else{
+            station remote;
+            remote.sin_family = AF_INET;
+            remote.sin_addr.s_addr = inet_addr(getLongestPeer().c_str());
+            remote.sin_port = htons(tcpTransferPort);
+            if (connect(sock , (struct sockaddr *)&remote , sizeof(remote)) < 0) {
+                perror("connect failed to update blockchain...\n");
+            }
+            if(send(sock, "BLOCKCHAINREQUEST", strlen("BLOCKCHAINREQUEST"), 0) < 0){
+                perror("Could not send blockchain request packet on TCP\n");
+            }
+            else{
+                g_print("SENT BLOCKCHAIN REQUEST PACKET.. PACKETS MUST BE ARRIVING ANY TIME NOW\n");
+            }
+        }
     }
 };
 
