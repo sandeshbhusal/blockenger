@@ -372,7 +372,7 @@ public:
                             // Check if the request is for the total blockchain?
                             if(myStr == "BLOCKCHAINREQUEST"){
                                 g_print("Someone is asking for a copy of the blockchain. We are going to send one.\n");
-                                for(int i=0; i<blockChain.size(); i++){
+                                for(int i=1; i<blockChain.size(); i++){
                                     int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
                                     station remote;
                                     remote.sin_family = AF_INET;

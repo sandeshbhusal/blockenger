@@ -23,10 +23,10 @@ static void buttonClicked(Gtk::Button *mybutton){
         for(int i=0; i<blockChain.size(); i++){
             Block thisBlock = blockChain.at(i);
             if(thisBlock._sender == myName) {
-                outmessages.push(decryptMessage(thisBlock._data, "192.168.1.1", "192.168.1.2"));
+                inMessages.push(decryptMessage(thisBlock._data, "192.168.1.1", "192.168.1.2"));
             }
             if(thisBlock._receiver == myName) {
-                inMessages.push(decryptMessage(thisBlock._data, "192.168.1.1", "192.168.1.2"));
+                outmessages.push(decryptMessage(thisBlock._data, "192.168.1.1", "192.168.1.2"));
             }
         }
     }
