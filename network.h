@@ -78,6 +78,11 @@ public:
             blockChain.push_back(GENESIS);
             alivePeers[0].push_back("127.0.0.3");
             alivePeers[1].push_back("Third Person");
+
+            std::string encMessage = encryptMessage(std::string("hello there"), "192.168.1.1", "192.168.1.2");
+            g_print(">>%s\n", encMessage.c_str());
+            std::string decMessage = decryptMessage(encMessage, "192.168.1.1", "192.168.1.2");
+            g_print(">>%s\n", decMessage.c_str());
         }
     }
     static char *getChars(const std::string &input) {
@@ -381,13 +386,10 @@ public:
                                             blockChain.push_back(checkBlock);
                                             g_print("COOL! A NEW BLOCK!!");
                                             std::string data = checkBlock._data;
-                                            for (int i = 0; i < data.size(); i++) {
-                                                if (data.at(i) == '~')
-                                                    data.at(i) = ' ';
-                                            }
+                                            data = decryptMessage(checkBlock._data, "192.168.1.1", "192.168.1.2");
                                             if(activeIP == checkBlock._receiver)
                                                 inMessages.push(data);
-                                        } else {
+                                        } else if(checkBlock._currentHash != mostRecent.calculateHash()) {
                                             g_print("Who keeps tampering with my blocks??\n");
                                             g_print("Got Hash: %s\n",checkBlock._prevHash.c_str());
                                             g_print("Expected: %s\n",mostRecent.calculateHash().c_str());
@@ -412,10 +414,10 @@ public:
     static bool sendMessage(const std::string &message) {
         Block *myBlock;
         int successfulSents = 0;
-        std::string encMessage = encryptMessage(message, myIP, activeIP);
+        std::string encMessage = encryptMessage(message, "192.168.1.1", "192.168.1.2");
         if(blockChain.size() > 0){
             int blockChainIndex = blockChain.size();
-            myBlock = new Block(myIP, activeIP, message, to_string(time(0)), blockChain[blockChainIndex-1].calculateHash());
+            myBlock = new Block(myIP, activeIP, encMessage, to_string(time(0)), blockChain[blockChainIndex-1].calculateHash());
 //            blockChain.push_back(*myBlock);
             g_print("Now I will create a new block\n");
             g_print("%s\n", myBlock->getStringFormToSend().c_str());
@@ -468,11 +470,7 @@ public:
         }
         if(successfulSents > 1){    // At least one computer must receive the block.
             std::string data = myBlock->_data;
-            for(int i=0; i<data.size(); i++){
-                if(data.at(i) == '~')
-                    data.at(i) = ' ';
-            }
-            outmessages.push(myBlock->_data);
+            outmessages.push(decryptMessage(myBlock->_data, "192.168.1.1", "192.168.1.2"));
             return true;
         }
         return false;

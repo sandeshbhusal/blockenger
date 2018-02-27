@@ -40,22 +40,40 @@ std::string userImages[] = {
     "gingerbread.png"
 };
 
-std::string XOR_Encryption(std::string toBeEncrypted, std::string sKey){
-    std::string sEncrypted(toBeEncrypted);
-    unsigned int iKey=sKey.length();
-    int iIn=toBeEncrypted.length();
-    int x=0;
-    for(int i = 0; i < iIn; i++)
-    {
-        sEncrypted[i] = toBeEncrypted[i] ^ sKey[x];
-        if(++x == iKey){ x = 0; }
-    }
-    return sEncrypted;
-}
 std::string encryptMessage(std::string message, std::string myIP, std::string hisIP){
-    return XOR_Encryption(message, (myIP+hisIP));
+    std::string key = myIP+hisIP+"!%^%^&!@*#123123";
+    int keySum = 0;
+    for(int i=0; i<key.size(); i++){
+        keySum += key.at(i);
+    }
+    keySum %= 100;
+    g_print("Key sum is %d \n", keySum);
+    std::string output;
+    for(int i=0; i<message.size(); i++){
+        char *ch = new char[2];
+        sprintf(ch, "%x", message.at(i)+keySum);
+        output += ch;
+    }
+    return output;
 }
 std::string decryptMessage(std::string message, std::string myIP, std::string hisIP){
-
+    std::string key = myIP+hisIP+"!%^%^&!@*#";
+    int keySum = 0;
+    for(int i=0; i<key.size(); i++){
+        keySum += key.at(i);
+    }
+    keySum %= 100;
+    g_print("Key sum is %d \n", keySum);
+    int len = message.length();
+    std::string newString;
+    for(int i=0; i< len; i+=2)
+    {
+        std::string byte = message.substr(i,2);
+        g_print("%s ", byte.c_str());
+        char chr = (char) (int)strtol(byte.c_str(), nullptr, 16);
+        chr = chr-keySum;
+        newString.push_back(chr);
+    }
+    return newString;
 }
 #endif
