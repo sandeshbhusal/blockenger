@@ -1,4 +1,4 @@
-# Install script for directory: /home/sandesh/projects/bitenger
+# Install script for directory: /home/sandesh/projects/blockenger
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -40,5 +40,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/sandesh/projects/bitenger/cmake-build-debug/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/sandesh/projects/blockenger/cmake-build-debug/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

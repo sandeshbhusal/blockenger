@@ -45,6 +45,7 @@ void connectNetwork(Glib::RefPtr<Gtk::Application> &app){
             alivePeers[0].push_back("127.0.0.1");
             alivePeers[1].push_back("Me");
 //            populateActive();
+//            mainWindow->signal_delete_event().connect(sigc::ptr_fun(&quitApplication));
             mainWindow->show();
 //            loginWindow->hide();
         }

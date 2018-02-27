@@ -344,8 +344,8 @@ public:
                     exit(EXIT_FAILURE);
                 }
                 std::string a(inet_ntoa(inputStation.sin_addr));
-//                g_print("New connection , socket fd is %d , ip is : %s , port : %d\n", new_socket,
-//                        inet_ntoa(inputStation.sin_addr), ntohs(inputStation.sin_port));
+                g_print("New connection , socket fd is %d , ip is : %s , port : %d\n", new_socket,
+                        inet_ntoa(inputStation.sin_addr), ntohs(inputStation.sin_port));
 
                 for (int i = 0; i < 30; i++) {
                     if (clients[i] == 0) {
@@ -390,6 +390,7 @@ public:
                                     }
                                     close(sock);
                                 }
+                                listenMessage();
                             }
                             else {
                                 Block checkBlock(buffer);
