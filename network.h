@@ -65,7 +65,8 @@ public:
             setsockopt(tcpTransferSocket, SOL_SOCKET, TCP_NODELAY, &accessTrigger, sizeof(accessTrigger));
             std::string handshake = "c|"+myUserName;
             broadcastAvailability(true, handshake);
-            sendPacketRequest();
+            handshake = "p|"+myUserName;
+            sendPacketRequest(std::string("255.255.255.255"), handshake);
             bindBroadcastPort();
             bindMessagePort();
             broadcastListener = new std::thread(listenPeerBroadcast);
@@ -287,10 +288,13 @@ public:
                     if(!flag){
                         g_print("This IP is new. I will store its packet size for future reference. as %d\n", thisPacketSize);
                         packetSizeStore.push_back(newPacketSize);
-                        if(blockChain.size() >= newPacketSize.size){
-                            // Sync the blockchain here.
+                        if(newPacketSize.size > blockChain.size()){
+                            updateBlockChain(getLongestPeer());
                         }
                     }
+                }
+                else if(buffer[0] =='u'){
+                    g_print("Update request received.\n");
                 }
             }
         }
@@ -475,7 +479,7 @@ public:
         }
         return false;
     }
-    static void sendPacketRequest(){
+    static void sendPacketRequest(std::string IPADDR, std::string handshake){
         g_print("SENDING PACKET SIZE QUERY REQUEST.");
         int accessTrigger = 1;
         int udpListenSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -488,17 +492,17 @@ public:
 
         motherShip.sin_port = htons(udpListenPort);
         motherShip.sin_family = AF_INET;
-        motherShip.sin_addr.s_addr = inet_addr("255.255.255.255");
+        motherShip.sin_addr.s_addr = inet_addr(IPADDR.c_str());
 
         int pings = 20;
         while (pings--) {
-            if (sendto(udpListenSocket, "p|bhusal", strlen("p|bhusal"), 0,
+            if (sendto(udpListenSocket, handshake.c_str(), handshake.length(), 0,
                        (stationBase *) &motherShip, sizeof(station)) == -1) {
                 std::cout << "Could not broadcast address. Retrying for another " << pings << " attempts"
                           << std::endl;
                 std::cout << errno;
             } else {
-                g_print("\rSuccessfully broadcast connection request #%d ", pings);
+                g_print("\rSuccessfully broadcast Packet query request #%d ", pings);
                 if(pings == 3){
                     g_print("\n");
                     return;
@@ -526,7 +530,8 @@ public:
         g_print("Someone has a more recent copy of the blockchain than me!\n");
         g_print("I will ask %s for the remaining blockchain..\n", peerName.c_str());
         // UDP Update == 'u' request to pull correct blockchain.
-
+        std::string handshake = "u|"+myUserName;
+        sendPacketRequest(peerName, handshake);
     }
 };
 
